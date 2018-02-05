@@ -2,8 +2,7 @@ package main
 
 import (
 	"net/http"
-
-	"github.com/XMatrixStudio/IceCream.Server/router"
+	"./router"
 )
 
 func main() {
