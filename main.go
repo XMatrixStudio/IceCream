@@ -3,9 +3,9 @@ package main
 import (
 	"net/http"
 
-	"github.com/XMatrixStudio/IceCream.Server/router"
+	"github.com/XMatrixStudio/IceCream/router"
 )
 
 func main() {
-	http.ListenAndServe(":8080", router.Router())
+	http.ListenAndServe(":30020", router.Router())
 }
