@@ -1,0 +1,248 @@
+openapi: 3.0.0
+info:
+  title: "IceCream Blog System APIs"
+  description: "冰淇淋博客系统API列表"
+  # termsOfService: ""
+  contact:
+    name: "XMatrix Studio"
+    url: "https://xmatrix.studio/contact"
+    email: "a@xmatrix.studio"
+  license:
+    name: "MIT License"
+    url: "https://github.com/XMatrixStudio/IceCream/blob/master/LICENSE"
+  version: "1.0alpha"
+servers:
+  - url: "https://api.xmatrix.studio/ice-cream/v1"
+    description: "XMatrix.Studio网站的API链接"
+paths:
+  "/Users/Info":
+    get:
+      tags:
+        - "Users"
+      summary: "用户信息"
+      description: "获取用户基本信息"
+      responses:
+        200:
+          description: "获取信息成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "email":
+                    type: "string"
+                    format: "email"
+                    example: "zhenlychen@foxmail.com"
+                  "userName":
+                    type: "string"
+                    description: "用户名"
+                    example: "Zhenly"
+                  "userClass":
+                    type: "number"
+                    description: |
+                      用户级别<br>
+                      0  ~ 49 - 订阅者<br>
+                      50 ~ 98 - 作者<br>
+                      99      - 管理员<br>
+                      100     - 小黑屋群众
+                    example: 99
+                  "avatar":
+                    type: "string"
+                    description: "头像链接"
+                    example: "https://xmatrix.studio/a.png"
+  "/Users/Login":
+    get:
+      tags:
+        - "Users"
+      summary: "用户登录"
+      description: "用户授权由Violet完成，授权完成后跳转到该API，该API用于校验code和state"
+      parameters:
+        - name: "code"
+          in: "query"
+          description: "Authorization code，注意此code会在1分钟内过期"
+          required: true
+          schema:
+            type: "string"
+        - name: "state"
+          in: "query"
+          description: "client端的状态值，原样带回"
+          required: true
+          schema:
+            type: "string"
+        - name: "redirect_uri"
+          in: "query"
+          description: "回调地址，原样带回"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        301:
+          description: |
+            code和state认证成功，跳转至redirect_uri<br>
+            code或state认证失败，跳转至失败页面
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "status":
+                    type: "string"
+                    description: "状态 success 或 fail"
+                    example: "success"
+    post:
+      tags:
+        - "Users"
+      summary: "用户授权"
+      description: "生成state并跳转至Violet授权界面/Verify/Authorize"
+      parameters:
+        - name: "quickLogin"
+          in: "query"
+          description: "是否使用快速登陆"
+          schema:
+            type: "boolean"
+            default: false
+        - name: "reLogin"
+          in: "query"
+          description: "是否强制重新登陆"
+          schema:
+            type: "boolean"
+            default: false
+      responses:
+        301:
+          description: "code生成成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "status":
+                    type: "string"
+                    description: "状态 success 或 fail"
+                    example: "success"
+  "/Users/Setting":
+    put:
+      tags:
+        - "Users"
+      summary: "设置用户信息"
+      responses:
+        400:
+          description: "设置失败"
+  "/Articles":
+    get:
+      tags:
+        - "Articles"
+      summary: "获取文章"
+      description: "获取文章的文本信息，包括头部yaml信息，用于文章修改"
+      parameters:
+        - name: "id"
+          in: "query"
+          description: "文章id"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "获取文章成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "article":
+                    type: "string"
+                    description: "文章内容，markdown格式"
+                    example: "# Hello, Zhenly\n"
+        400:
+          description: "获取文章失败"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 权限不足<br>
+                      non_exist_article - 文章不存在
+                    example: "permission_denied"
+    post:
+      tags:
+        - "Articles"
+      summary: "新建文章"
+      responses:
+        400:
+          description: "新建文章失败"
+    put:
+      tags:
+        - "Articles"
+      summary: "修改文章"
+      responses:
+        400:
+          description: "修改文章失败"
+    delete:
+      tags:
+        - "Articles"
+      summary: "删除文章"
+      responses:
+        400:
+          description: "删除文章失败"
+  "/Articles/Comment":
+    get:
+      tags:
+        - "Articles"
+      summary: "获取评论"
+      responses:
+        400:
+          description: "获取评论失败"
+    post:
+      tags:
+        - "Articles"
+      summary: "新建评论"
+      responses:
+        400:
+          description: "新建评论失败"
+    put:
+      tags:
+        - "Articles"
+      summary: "修改评论"
+      responses:
+        400:
+          description: "修改评论失败"
+    delete:
+      tags:
+        - "Articles"
+      summary: "删除评论"
+      responses:
+        400:
+          description: "删除评论失败"
+  "/Website/Page":
+    post:
+      tags:
+        - "Website"
+      summary: "新建页面"
+      responses:
+        400:
+          description: "新建页面失败"
+    put:
+      tags:
+        - "Website"
+      summary: "修改页面"
+      responses:
+        400:
+          description: "修改页面失败"
+    delete:
+      tags:
+        - "Website"
+      summary: "删除页面"
+      responses:
+        400:
+          description: "删除页面失败"
+  "/Website/Setting":
+    put:
+      tags:
+        - "Website"
+      summary: "设置网站信息"
+      responses:
+        400:
+          description: "设置失败"
