@@ -32,24 +32,72 @@ paths:
                   "email":
                     type: "string"
                     format: "email"
-                    example: "zhenlychen@foxmail.com"
-                  "userName":
+                    example: "a@xmatrix.studio"
+                  "name":
                     type: "string"
                     description: "用户名"
-                    example: "Zhenly"
-                  "userClass":
+                    example: "XMatrix"
+                  "class":
                     type: "number"
                     description: |
                       用户级别<br>
-                      0  ~ 49 - 订阅者<br>
-                      50 ~ 98 - 作者<br>
-                      99      - 管理员<br>
-                      100     - 小黑屋群众
+                      -1     - 小黑屋群众<br>
+                      0      - 订阅者<br>
+                      1 ~ 10 - 作者<br>
+                      50     - 管理员<br>
+                      99     - 站长
                     example: 99
-                  "avatar":
+                  "info":
+                    type: "object"
+                    description: "用户个人信息"
+                    properties:
+                      "avatar":
+                        type: "string"
+                        description: "头像链接"
+                        example: "https://xmatrix.studio/a.png"
+                      "bio":
+                        type: "string"
+                        description: "个人简介"
+                        example: "Hi, world"
+                      "birthDate":
+                        type: "string"
+                        format: "date"
+                        description: "出生日期"
+                        example: "2017-10-12"
+                      "gender":
+                        type: "number"
+                        description: |
+                          性别<br>
+                          0 - 未确定<br>
+                          1 - 男<br>
+                          2 - 女<br>
+                          3 - 其他<br>
+                        example: 0
+                      "location":
+                        type: "string"
+                        description: "居住地"
+                        example: "Guangzhou, China"
+                      "phone":
+                        type: "string"
+                        description: "电话号码"
+                        example: "12345678901"
+                      "url":
+                        type: "string"
+                        description: "个人主页链接"
+                        example: "http://xmatrix.studio/about"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
                     type: "string"
-                    description: "头像链接"
-                    example: "https://xmatrix.studio/a.png"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 权限不足
+                    example: "permission_denied"
   "/Users/Login":
     get:
       tags:
@@ -93,7 +141,7 @@ paths:
       tags:
         - "Users"
       summary: "用户授权"
-      description: "生成state并跳转至Violet授权界面/Verify/Authorize"
+      description: "生成state并跳转至Violet授权界面/Verify/Authorize，同时将原链接(redirect_uri)发送过去"
       parameters:
         - name: "quickLogin"
           in: "query"
@@ -119,14 +167,13 @@ paths:
                     type: "string"
                     description: "状态 success 或 fail"
                     example: "success"
-  "/Users/Setting":
-    put:
+    delete:
       tags:
         - "Users"
-      summary: "设置用户信息"
+      summary: "用户退出登录"
       responses:
-        400:
-          description: "设置失败"
+        301:
+          description: "重定向到首页"
   "/Articles":
     get:
       tags:
@@ -151,7 +198,7 @@ paths:
                   "article":
                     type: "string"
                     description: "文章内容，markdown格式"
-                    example: "# Hello, Zhenly\n"
+                    example: "# Hello, XMatrix\n"
         400:
           description: "获取文章失败"
           content:
@@ -163,59 +210,335 @@ paths:
                     type: "string"
                     description: |
                       错误信息<br>
-                      permission_denied - 权限不足<br>
-                      non_exist_article - 文章不存在
-                    example: "permission_denied"
+                      invalid_article - 文章不存在
+                    example: "invalid_article"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_author - 用户非本文作者，权限不足
+                    example: "invalid_author"
     post:
       tags:
         - "Articles"
       summary: "新建文章"
+      description: "新建文章，仅针对有作者级别的用户"
+      parameters:
+        - name: "article"
+          in: "query"
+          description: "文章内容，markdown格式，包括头部yaml信息，但信息不能存在date、author等特殊字段"
+          required: true
+          schema:
+            type: "string"
       responses:
+        201:
+          description: "新建文章成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "url":
+                    type: "string"
+                    description: "该文章的链接，用于重定向"
+                    example: "https://xmatrix.studio/uncategories/hiworld/"
         400:
-          description: "新建文章失败"
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_yaml  - yaml信息不合法<br>
+                      duplicate_url - 生成url链接重复
+                    example: "invalid_yaml"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 用户非作者，权限不足
+                    example: "permission_denied"
     put:
       tags:
         - "Articles"
       summary: "修改文章"
+      description: "修改文章，仅针对于有作者权限的用户"
+      parameters:
+        - name: "id"
+          in: "query"
+          description: "文章id"
+          required: true
+          schema:
+            type: "string"
+        - name: "article"
+          in: "query"
+          description: "文章内容，markdown格式，包括头部yaml信息，但信息不能存在date、author等特殊字段"
+          required: true
+          schema:
+            type: "string"
       responses:
+        201:
+          description: "修改文章成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "url":
+                    type: "string"
+                    description: "该文章的链接，用于重定向"
+                    example: "https://xmatrix.studio/uncategories/hiworld/"
         400:
-          description: "修改文章失败"
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在<br>
+                      invalid_yaml       - yaml信息不合法<br>
+                      duplicate_url      - 生成url链接重复
+                    example: "invalid_yaml"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_author - 用户非本文作者，权限不足
+                      lock_article   - 本文已被锁定，无法修改
+                    example: "invalid_author"
     delete:
       tags:
         - "Articles"
       summary: "删除文章"
+      description: "删除文章，个人主页删除不需要重定向，在该文章页面删除需要重定向"
+      parameters:
+        - name: "id"
+          in: "query"
+          description: "文章id"
+          required: true
+          schema:
+            type: "string"
+        - name: "redirect"
+          in: "query"
+          description: "是否需要重定向"
+          schema:
+            type: "boolean"
+            default: false
       responses:
+        204:
+          description: "在个人主页删除文章成功，不返回任何信息"
+        301:
+          description: "在文章链接删除文章成功，重定向至首页"
         400:
-          description: "删除文章失败"
-  "/Articles/Comment":
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在
+                    example: "invalid_article_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_author - 用户非本文作者，权限不足
+                      lock_article   - 本文已被锁定，无法删除
+                    example: "invalid_author"
+  "/Articles/Comments":
     get:
       tags:
         - "Articles"
-      summary: "获取评论"
+      summary: "获取评论列表"
+      description: "获取评论列表，以数组形式存在"
+      parameters:
+        - name: "id"
+          in: "query"
+          description: "文章id"
+          required: true
+          schema:
+            type: "string"
       responses:
+        200:
+          description: "获取评论成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "comments":
+                    type: "array"
+                    description: "评论"
+                    items:
+                      type: "object"
+                      properties:
+                        "id":
+                          type: "string"
+                          description: "评论id"
+                          example: "2"
+                        "userId":
+                          type: "string"
+                          description: "评论者id"
+                          example: "3"
+                        "replyId":
+                          type: "string"
+                          description: "该评论所回复的评论的id，可不存在"
+                          example: "1"
+                        "date":
+                          type: "string"
+                          format: "date-time"
+                          description: "评论发表时间"
+                          example: "2018-2-7 22:43"
+                        "like":
+                          type: "number"
+                          description: "点赞人数"
+                          example: "666"
+                        "likeIt":
+                          type: "boolean"
+                          description: "是否点赞"
+                          example: true
+                        "top":
+                          type: "boolean"
+                          description: "是否精选置顶"
+                          example: true
+                        "text":
+                          type: "string"
+                          description: "评论内容"
+                          example: "dalao好~"
         400:
-          description: "获取评论失败"
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在
+                    example: "invalid_article_id"
     post:
       tags:
         - "Articles"
       summary: "新建评论"
+      description: "新建评论，不得评论自己的评论，可以评论自己的文章"
+      parameters:
+        - name: "id"
+          in: "query"
+          description: "文章id"
+          required: true
+          schema:
+            type: "string"
+        - name: "replyId"
+          in: "query"
+          description: "回复评论的id"
+          schema:
+            type: "string"
+        - name: "text"
+          in: "query"
+          description: "评论内容"
+          schema:
+            type: "string"
       responses:
+        204:
+          description: "新建评论成功"
         400:
-          description: "新建评论失败"
-    put:
-      tags:
-        - "Articles"
-      summary: "修改评论"
-      responses:
-        400:
-          description: "修改评论失败"
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在
+                      invalid_reply_id   - 回复评论不存在
+                      invalid_text       - 内容不能为空
+                    example: "invalid_article_id"
     delete:
       tags:
         - "Articles"
       summary: "删除评论"
+      description: "删除评论"
+      parameters:
+        - name: "id"
+          in: "query"
+          description: "评论id"
+          schema:
+            type: "string"
       responses:
+        204:
+          description: "删除评论成功"
         400:
-          description: "删除评论失败"
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_comment_id - 评论不存在
+                    example: "invalid_comment_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_author - 用户非评论者，无法删除该评论
+                      lock_article   - 文章已被锁定，无法删除评论
+                    example: "invalid_author"
   "/Website/Page":
     post:
       tags:
