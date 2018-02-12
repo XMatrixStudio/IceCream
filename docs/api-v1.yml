@@ -258,7 +258,14 @@ paths:
       tags:
         - "Users"
       summary: "获取反馈"
-      description: "获取用户反馈，用于查看自己的反馈结果"
+      description: "获取用户反馈，用于查看自己的反馈结果或用于管理员回复反馈"
+      parameters:
+        - name: "manage"
+          in: "query"
+          description: "是否处于管理状态"
+          schema:
+            type: "boolean"
+            default: false
       responses:
         200:
           description: "获取反馈成功"
@@ -298,7 +305,8 @@ paths:
                     type: "string"
                     description: |
                       错误信息<br>
-                      not_login_state - 非登陆状态
+                      not_login_state   - 非登陆状态<br>
+                      permission_denied - 权限不足
                     example: "not_login_state"
     post:
       tags:
@@ -378,6 +386,8 @@ paths:
           in: "query"
           required: true
           description: "反馈内容"
+          schema:
+            type: "string"
       responses:
         204:
           description: "添加反馈内容成功"
@@ -389,6 +399,7 @@ paths:
                 type: "object"
                 properties:
                   "error":
+                    type: "string"
                     description: |
                       错误信息<br>
                       invalid_feedback_id - 反馈不存在<br>
@@ -1163,6 +1174,49 @@ paths:
                       permission_denied  - 小黑屋<br>
                       not_login_state    - 非登录状态
                     example: "lock_article"
+  "/Articles/List":
+    get:
+      tags:
+        - "Articles"
+      summary: "获取文章列表"
+      description: "通过用户id获取文章列表"
+      parameters:
+        - name: "userId"
+          in: "query"
+          required: true
+          description: "用户id"
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "获取文章列表成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "articleList":
+                    type: "array"
+                    description: "文章列表"
+                    items:
+                      type: "object"
+                      properties:
+                        "articleId":
+                          type: "string"
+                          description: "文章id"
+                          example: "1"
+                        "url":
+                          type: "string"
+                          description: "文章链接"
+                          example: "https://xmatrix.studio/hiworld"
+                        "title":
+                          type: "string"
+                          description: "文章标题"
+                          example: "Hi, XMatrix"
+                        "summary":
+                          type: "string"
+                          description: "文章摘要"
+                          example: "Hi, world~"
   "/Articles/Status":
     get:
       tags:
@@ -1214,27 +1268,284 @@ paths:
                       invalid_article_id - 文章不存在
                     example: "invalid_article_id"
   "/Website/Page":
+    get:
+      tags:
+        - "Website"
+      summary: "获取页面"
+      description: "获取页面的文本信息，包括头部yaml信息，用于页面修改"
+      parameters:
+        - name: "pageId"
+          in: "query"
+          description: "页面id"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "获取页面成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "text":
+                    type: "string"
+                    description: "页面内容，markdown格式"
+                    example: "# Hi, XMatrix\n"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_page_id - 页面不存在
+                    example: "invalid_page_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 用户没有管理员权限<br>
+                      not_login_state   - 非登录状态
+                    example: "permission_denied"
     post:
       tags:
         - "Website"
-      summary: "新建页面，待定"
+      summary: "新建页面"
+      description: "新建页面，仅针对有管理员级别的用户"
+      parameters:
+        - name: "text"
+          in: "query"
+          description: "页面内容，markdown格式，包括头部yaml信息，但信息不能存在date、author等特殊字段"
+          required: true
+          schema:
+            type: "string"
       responses:
+        301:
+          description: "新建页面成功，重定向至页面链接"
         400:
-          description: "新建页面失败"
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_yaml  - yaml信息不合法<br>
+                      duplicate_url - 生成url链接重复
+                    example: "invalid_yaml"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 用户没有管理员权限<br>
+                      not_login_state   - 非登录状态
+                    example: "permission_denied"
     put:
       tags:
         - "Website"
-      summary: "修改页面，待定"
+      summary: "修改页面"
+      description: "修改页面，仅针对于有管理员权限的用户"
+      parameters:
+        - name: "pageId"
+          in: "query"
+          description: "页面id"
+          required: true
+          schema:
+            type: "string"
+        - name: "text"
+          in: "query"
+          description: "页面内容，markdown格式，包括头部yaml信息，但信息不能存在date、author等特殊字段"
+          required: true
+          schema:
+            type: "string"
       responses:
+        301:
+          description: "修改页面成功，重定向到页面链接"
         400:
-          description: "修改页面失败"
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_page_id - 页面不存在<br>
+                      invalid_yaml    - yaml信息不合法<br>
+                      duplicate_url   - 生成url链接重复
+                    example: "invalid_yaml"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 用户没有管理员权限<br>
+                      not_login_state   - 非登录状态
+                    example: "permission_denied"
     delete:
       tags:
         - "Website"
-      summary: "删除页面，待定"
+      summary: "删除页面"
+      description: "删除页面，个人主页删除不需要重定向，在该页面页面删除需要重定向"
+      parameters:
+        - name: "pageId"
+          in: "query"
+          description: "页面id"
+          required: true
+          schema:
+            type: "string"
       responses:
+        204:
+          description: "在个人主页删除页面成功，不返回任何信息"
+        301:
+          description: "在页面链接删除页面成功，重定向至首页"
         400:
-          description: "删除页面失败"
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_page_id - 页面不存在
+                    example: "invalid_page_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 用户没有管理员权限<br>
+                      not_login_state   - 非登录状态
+                    example: "permission_denied"
+  "/Website/Page/List":
+    get:
+      tags:
+        - "Website"
+      summary: "获取页面列表"
+      description: "获取页面列表，用于管理员权限"
+      responses:
+        200:
+          description: "获取页面列表成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "pageList":
+                    type: "array"
+                    description: "页面列表"
+                    items:
+                      type: "object"
+                      properties:
+                        "pageId":
+                          type: "string"
+                          description: "页面id"
+                          example: "1"
+                        "url":
+                          type: "string"
+                          description: "页面链接"
+                          example: "https://xmatrix.studio/violet"
+                        "title":
+                          type: "string"
+                          description: "页面标题"
+                          example: "Violet - User System"
+                        "summary":
+                          type: "string"
+                          description: "页面摘要"
+                          example: "# Introduction"
+  "/Website/Permission":
+    put:
+      tags:
+        - "Website"
+      summary: "设置用户权限"
+      description: "设置用户的权限，只能设置比自己级别低的权限，该接口不用于小黑屋，不能设置自身"
+      parameters:
+        - name: "userName"
+          in: "query"
+          description: "用户名"
+          schema:
+            type: "string"
+        - name: "class"
+          in: "query"
+          description: |
+            用户级别<br>
+            -1     - 小黑屋群众<br>
+            0      - 订阅者<br>
+            1 ~ 10 - 作者<br>
+            50     - 管理员<br>
+            99     - 站长
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "设置权限成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_user_name  - 用户不存在<br>
+                      invalid_user_class - 用户级别非法
+                    example: "invalid_user_name"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_login_state   - 非登录状态<br>
+                      permission_denied - 权限不足，没有管理员权限
+                    example: "permission_denied"
   "/Website/Report":
     get:
       tags:
@@ -1361,6 +1672,57 @@ paths:
       tags:
         - "Website"
       summary: "设置网站信息"
+      description: "设置网站的基本信息"
+      parameters:
+        - name: "title"
+          in: "query"
+          required: true
+          description: "网站标题"
+          schema:
+            type: "string"
+        - name: "subtitle"
+          in: "query"
+          description: "网站副标题"
+          schema:
+            type: "string"
+        - name: "introduction"
+          in: "query"
+          description: "网站介绍"
+          schema:
+            type: "string"
+        - name: "urlType"
+          in: "query"
+          required: true
+          description: "网站链接类型，%%格式符形式表达，比如 %categories% 表示分类，其余形式待定"
+          schema:
+            type: "string"
       responses:
+        204:
+          description: "设置成功"
         400:
-          description: "设置失败"
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_title - 标题非法<br>
+                      invalid_url_type - url type格式错误
+                    example: "invalid_title"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 权限不足，没有站长权限
+                    example: "permission_denied"
