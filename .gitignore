@@ -13,3 +13,4 @@
 
 # Config
 config/config.go
+.vscode/*
