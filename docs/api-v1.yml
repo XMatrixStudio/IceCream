@@ -1,0 +1,1728 @@
+openapi: 3.0.0
+info:
+  title: "IceCream Blog System APIs"
+  description: "冰淇淋博客系统API列表"
+  # termsOfService: ""
+  contact:
+    name: "XMatrix Studio"
+    url: "https://xmatrix.studio/contact"
+    email: "a@xmatrix.studio"
+  license:
+    name: "MIT License"
+    url: "https://github.com/XMatrixStudio/IceCream/blob/master/LICENSE"
+  version: "1.0alpha"
+servers:
+  - url: "https://api.xmatrix.studio/ice-cream/v1"
+    description: "XMatrix.Studio网站的API链接"
+paths:
+  "/Users":
+    get:
+      tags:
+        - "Users"
+      summary: "用户信息"
+      description: "获取用户基本信息，userId不存在时获取自身信息"
+      parameters:
+        - name: "userId"
+          in: "query"
+          description: "用户id"
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "获取信息成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "name":
+                    type: "string"
+                    description: "用户名"
+                    example: "XMatrix"
+                  "class":
+                    type: "number"
+                    description: |
+                      用户级别(获取他人信息时不返回)<br>
+                      -1     - 小黑屋群众<br>
+                      0      - 订阅者<br>
+                      1 ~ 10 - 作者<br>
+                      50     - 管理员<br>
+                      99     - 站长
+                    example: 99
+                  "info":
+                    type: "object"
+                    description: "用户个人信息"
+                    properties:
+                      "email":
+                        type: "string"
+                        format: "email"
+                        example: "a@xmatrix.studio"
+                      "avatar":
+                        type: "string"
+                        description: "头像链接"
+                        example: "https://xmatrix.studio/a.png"
+                      "bio":
+                        type: "string"
+                        description: "个人简介"
+                        example: "Hi, world"
+                      "birthDate":
+                        type: "string"
+                        format: "date"
+                        description: "出生日期"
+                        example: "2017-10-12"
+                      "gender":
+                        type: "number"
+                        description: |
+                          性别<br>
+                          0 - 未确定<br>
+                          1 - 男<br>
+                          2 - 女<br>
+                          3 - 其他<br>
+                        example: 0
+                      "location":
+                        type: "string"
+                        description: "居住地"
+                        example: "Guangzhou, China"
+                      "phone":
+                        type: "string"
+                        description: "电话号码"
+                        example: "12345678901"
+                      "url":
+                        type: "string"
+                        description: "个人主页链接"
+                        example: "http://xmatrix.studio/about"
+                  "articles":
+                    type: "array"
+                    description: "该用户的文章，即使用户权限被降低，以前所写的文章也存在"
+                    items:
+                      type: "object"
+                      properties:
+                        "articleId":
+                          type: "string"
+                          description: "文章id"
+                          example: "2"
+                        "url":
+                          type: "string"
+                          description: "文章链接"
+                          example: "https://xmatrix.studio/uncategories/hiworld/"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_user_id - 用户id不合法
+                    example: "invalid_user_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_login_state   - 非登录状态<br>
+                      permission_denied - 权限不足，你处于小黑屋状态
+                    example: "permission_denied"
+  "/Users/Blacklist":
+    get:
+      tags:
+        - "Users"
+      summary: "获取黑名单"
+      description: "获取用户的黑名单，用于用户黑名单设置"
+      responses:
+        200:
+          description: "获取黑名单成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "userList":
+                    type: "array"
+                    description: "黑名单用户列表"
+                    items:
+                      type: "string"
+                      description: "用户id"
+                      example: "10"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_login_state   - 非登录状态<br>
+                      permission_denied - 权限不足，你处于小黑屋状态
+                    example: "permission_denied"
+    post:
+      tags:
+        - "Users"
+      summary: "新增黑名单用户"
+      description: "新增用户至黑名单"
+      parameters:
+        - name: "userName"
+          in: "query"
+          required: true
+          description: "用户名"
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "新增黑名单用户成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_user_name - 用户不存在<br>
+                      in_blacklist      - 用户已在黑名单中
+                    example: "invalid_user_name"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_login_state   - 非登录状态<br>
+                      permission_denied - 权限不足，你处于小黑屋状态
+                    example: "permission_denied"
+    delete:
+      tags:
+        - "Users"
+      summary: "删除黑名单用户"
+      description: "将用户从黑名单中移除"
+      parameters:
+        - name: "userName"
+          in: "query"
+          required: true
+          description: "用户名"
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "删除黑名单用户成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_user_name - 用户不存在<br>
+                      not_in_blacklist  - 用户不在黑名单中
+                    example: "invalid_user_name"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_login_state   - 非登录状态<br>
+                      permission_denied - 权限不足，你处于小黑屋状态
+                    example: "permission_denied"
+  "/Users/Feedback":
+    get:
+      tags:
+        - "Users"
+      summary: "获取反馈"
+      description: "获取用户反馈，用于查看自己的反馈结果或用于管理员回复反馈"
+      parameters:
+        - name: "manage"
+          in: "query"
+          description: "是否处于管理状态"
+          schema:
+            type: "boolean"
+            default: false
+      responses:
+        200:
+          description: "获取反馈成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "feedbackList":
+                    type: "array"
+                    description: "反馈列表"
+                    items:
+                      type: "object"
+                      properties:
+                        "feedbackId":
+                          type: "string"
+                          description: "反馈id"
+                          example: "1"
+                        "title":
+                          type: "string"
+                          description: "反馈标题"
+                          example: "用户XMatrix小黑屋申述"
+                        "text":
+                          type: "array"
+                          items:
+                            type: "string"
+                            description: "反馈内容(array)"
+                            example: "我刚注册的账号，一注册就进小黑屋？"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_login_state   - 非登陆状态<br>
+                      permission_denied - 权限不足
+                    example: "not_login_state"
+    post:
+      tags:
+        - "Users"
+      summary: "提交反馈"
+      description: "用户反馈，用于反馈信息和小黑屋用户申述"
+      parameters:
+        - name: "complaint"
+          in: "query"
+          description: "是否申述类反馈"
+          schema:
+            type: "boolean"
+            default: false
+        - name: "title"
+          in: "query"
+          description: "反馈标题"
+          schema:
+            type: "string"
+        - name: "text"
+          in: "query"
+          description: "反馈内容"
+          schema:
+            type: "string"
+      responses:
+        201:
+          description: "反馈成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "feedbackId":
+                    type: "string"
+                    description: "反馈id"
+                    example: "1"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_title - 标题不能为空<br>
+                      invalid_text  - 内容不能为空
+                    example: "invalid_title"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_class   - 非法反馈类型<br>
+                      not_login_state - 非登陆状态
+                    example: "invalid_class"
+    put:
+      tags:
+        - "Users"
+      summary: "跟进反馈"
+      description: "跟进反馈，类似聊天式"
+      parameters:
+        - name: "feedbackId"
+          in: "query"
+          required: true
+          description: "反馈id"
+          schema:
+            type: "string"
+        - name: "text"
+          in: "query"
+          required: true
+          description: "反馈内容"
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "添加反馈内容成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_feedback_id - 反馈不存在<br>
+                      invalid_text        - 内容不能为空
+                    example: "invalid_feedback_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_feedback_author - 不是反馈作者<br>
+                      not_login_state - 非登陆状态
+                    example: "not_feedback_author"
+  "/Users/Login":
+    get:
+      tags:
+        - "Users"
+      summary: "用户登录"
+      description: "用户授权由Violet完成，授权完成后跳转到该API，该API用于校验code和state"
+      parameters:
+        - name: "code"
+          in: "query"
+          description: "Authorization code，注意此code会在1分钟内过期"
+          required: true
+          schema:
+            type: "string"
+        - name: "state"
+          in: "query"
+          description: "client端的状态值，原样带回"
+          required: true
+          schema:
+            type: "string"
+        - name: "redirect_uri"
+          in: "query"
+          description: "回调地址，原样带回"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        301:
+          description: |
+            code和state认证成功，跳转至redirect_uri<br>
+            code或state认证失败，跳转至失败页面
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "status":
+                    type: "string"
+                    description: "状态 success 或 fail"
+                    example: "success"
+    post:
+      tags:
+        - "Users"
+      summary: "用户授权"
+      description: "生成state并跳转至Violet授权界面/Verify/Authorize，同时将原链接(redirect_uri)发送过去"
+      parameters:
+        - name: "quickLogin"
+          in: "query"
+          description: "是否使用快速登陆"
+          schema:
+            type: "boolean"
+            default: false
+        - name: "reLogin"
+          in: "query"
+          description: "是否强制重新登陆"
+          schema:
+            type: "boolean"
+            default: false
+      responses:
+        301:
+          description: "code生成成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "status":
+                    type: "string"
+                    description: "状态 success 或 fail"
+                    example: "success"
+    delete:
+      tags:
+        - "Users"
+      summary: "用户退出登录"
+      responses:
+        301:
+          description: "重定向到首页"
+  "/Articles":
+    get:
+      tags:
+        - "Articles"
+      summary: "获取文章"
+      description: "获取文章的文本信息，包括头部yaml信息，用于文章修改"
+      parameters:
+        - name: "articleId"
+          in: "query"
+          description: "文章id"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "获取文章成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "text":
+                    type: "string"
+                    description: "文章内容，markdown格式"
+                    example: "# Hi, XMatrix\n"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在
+                    example: "invalid_article_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_article_author - 用户非本文作者，权限不足<br>
+                      lock_article       - 文章被锁定<br>
+                      permission_denied  - 用户没有作者权限<br>
+                      not_login_state    - 非登录状态
+                    example: "not_article_author"
+    post:
+      tags:
+        - "Articles"
+      summary: "新建文章"
+      description: "新建文章，仅针对有作者级别的用户"
+      parameters:
+        - name: "text"
+          in: "query"
+          description: "文章内容，markdown格式，包括头部yaml信息，但信息不能存在date、author等特殊字段"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        301:
+          description: "新建文章成功，重定向至文章链接"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_yaml  - yaml信息不合法<br>
+                      duplicate_url - 生成url链接重复
+                    example: "invalid_yaml"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 用户没有作者权限<br>
+                      not_login_state   - 非登录状态
+                    example: "permission_denied"
+    put:
+      tags:
+        - "Articles"
+      summary: "修改文章"
+      description: "修改文章，仅针对于有作者权限的用户"
+      parameters:
+        - name: "articleId"
+          in: "query"
+          description: "文章id"
+          required: true
+          schema:
+            type: "string"
+        - name: "text"
+          in: "query"
+          description: "文章内容，markdown格式，包括头部yaml信息，但信息不能存在date、author等特殊字段"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        301:
+          description: "修改文章成功，重定向到文章链接"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在<br>
+                      invalid_yaml       - yaml信息不合法<br>
+                      duplicate_url      - 生成url链接重复
+                    example: "invalid_yaml"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_article_author - 用户非本文作者，权限不足<br>
+                      lock_article       - 本文已被锁定，无法修改<br>
+                      permission_denied  - 用户没有作者权限<br>
+                      not_login_state    - 非登录状态
+                    example: "not_article_author"
+    delete:
+      tags:
+        - "Articles"
+      summary: "删除文章"
+      description: "删除文章，个人主页删除不需要重定向，在该文章页面删除需要重定向"
+      parameters:
+        - name: "articleId"
+          in: "query"
+          description: "文章id"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "在个人主页删除文章成功，不返回任何信息"
+        301:
+          description: "在文章链接删除文章成功，重定向至首页"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在
+                    example: "invalid_article_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_article_author - 用户非本文作者，权限不足<br>
+                      lock_article       - 本文已被锁定，无法删除<br>
+                      permission_denied  - 用户没有作者权限<br>
+                      not_login_state    - 非登录状态
+                    example: "not_article_author"
+  "/Articles/Comments":
+    get:
+      tags:
+        - "Articles"
+      summary: "获取评论列表"
+      description: "获取评论列表，以数组形式存在"
+      parameters:
+        - name: "articleId"
+          in: "query"
+          description: "文章id"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "获取评论成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "comments":
+                    type: "array"
+                    description: "评论"
+                    items:
+                      type: "object"
+                      properties:
+                        "commentId":
+                          type: "string"
+                          description: "评论id"
+                          example: "2"
+                        "userId":
+                          type: "string"
+                          description: "评论者id"
+                          example: "3"
+                        "replyId":
+                          type: "string"
+                          description: "该评论所回复的评论的id，可不存在"
+                          example: "1"
+                        "date":
+                          type: "string"
+                          format: "date-time"
+                          description: "评论发表时间"
+                          example: "2018-2-7 22:43"
+                        "like":
+                          type: "number"
+                          description: "点赞人数"
+                          example: "666"
+                        "likeIt":
+                          type: "boolean"
+                          description: "是否点赞"
+                          example: true
+                        "top":
+                          type: "boolean"
+                          description: "是否精选置顶"
+                          example: true
+                        "text":
+                          type: "string"
+                          description: "评论内容"
+                          example: "dalao好~"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在
+                    example: "invalid_article_id"
+    post:
+      tags:
+        - "Articles"
+      summary: "新建评论"
+      description: "新建评论，不得评论自己的评论，可以评论自己的文章"
+      parameters:
+        - name: "articleId"
+          in: "query"
+          description: "文章id"
+          required: true
+          schema:
+            type: "string"
+        - name: "replyId"
+          in: "query"
+          description: "回复评论的id"
+          schema:
+            type: "string"
+        - name: "text"
+          in: "query"
+          description: "评论内容"
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "新建评论成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在<br>
+                      invalid_reply_id   - 回复评论不存在<br>
+                      invalid_text       - 内容不能为空<br>
+                    example: "invalid_article_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      blacklist         - 黑名单<br>
+                      permission_denied - 小黑屋<br>
+                      not_login_state   - 非登录状态
+                    example: "blacklist"
+    delete:
+      tags:
+        - "Articles"
+      summary: "删除评论"
+      description: "删除评论"
+      parameters:
+        - name: "commentId"
+          in: "query"
+          description: "评论id"
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "删除评论成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_comment_id - 评论不存在
+                    example: "invalid_comment_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_comment_author - 用户非评论者，无法删除该评论<br>
+                      lock_article       - 文章已被锁定，无法删除评论<br>
+                      permission_denied  - 小黑屋<br>
+                      not_login_state    - 非登录状态
+                    example: "not_comment_author"
+  "/Articles/Comments/Like":
+    post:
+      tags:
+        - "Articles"
+      summary: "点赞评论"
+      description: "给评论点赞"
+      parameters:
+        - name: "commentId"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        201:
+          description: "点赞成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "like":
+                    type: "number"
+                    description: "点赞人数"
+                    example: "13"
+                  "likeIt":
+                    type: "boolean"
+                    description: "您是否已点赞"
+                    example: true
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_comment_id - 评论不存在<br>
+                      like_it_state      - 您已点赞
+                    example: "invalid_comment_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      lock_article       - 文章已被锁定，无法点赞<br>
+                      permission_denied  - 小黑屋<br>
+                      not_login_state    - 非登录状态
+                    example: "lock_article"
+    delete:
+      tags:
+        - "Articles"
+      summary: "取消点赞评论"
+      description: "给评论点赞"
+      parameters:
+        - name: "commentId"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        201:
+          description: "取消点赞成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "like":
+                    type: "number"
+                    description: "点赞人数"
+                    example: "11"
+                  "likeIt":
+                    type: "boolean"
+                    description: "您是否已点赞"
+                    example: false
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_comment_id - 评论不存在<br>
+                      not_like_it_state  - 您未点赞
+                    example: "invalid_comment_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      lock_article       - 文章已被锁定，无法点赞<br>
+                      permission_denied  - 小黑屋<br>
+                      not_login_state    - 非登录状态
+                    example: "lock_article"
+  "/Articles/Comments/Top":
+    post:
+      tags:
+        - "Articles"
+      summary: "置顶评论"
+      description: "置顶精选评论"
+      parameters:
+        - name: "commentId"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "置顶成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_comment_id - 评论不存在<br>
+                    example: "invalid_comment_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_article_author - 用户非本文作者，权限不足<br>
+                      lock_article       - 文章已被锁定，无法点赞<br>
+                      permission_denied  - 小黑屋<br>
+                      not_login_state    - 非登录状态
+                    example: "lock_article"
+    delete:
+      tags:
+        - "Articles"
+      summary: "取消置顶评论"
+      description: "取消置顶精选评论"
+      parameters:
+        - name: "commentId"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "取消置顶成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_comment_id - 评论不存在<br>
+                    example: "invalid_comment_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_article_author - 用户非本文作者，权限不足<br>
+                      lock_article       - 文章已被锁定，无法点赞<br>
+                      permission_denied  - 小黑屋<br>
+                      not_login_state    - 非登录状态
+                    example: "lock_article"
+  "/Articles/Like":
+    post:
+      tags:
+        - "Articles"
+      summary: "点赞文章"
+      description: "给文章点赞"
+      parameters:
+        - name: "articleId"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        201:
+          description: "点赞成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "like":
+                    type: "number"
+                    description: "点赞人数"
+                    example: "13"
+                  "likeIt":
+                    type: "boolean"
+                    description: "您是否已点赞"
+                    example: true
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在<br>
+                      like_it_state      - 您已点赞
+                    example: "invalid_article_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      lock_article       - 文章已被锁定，无法点赞<br>
+                      permission_denied  - 小黑屋<br>
+                      not_login_state    - 非登录状态
+                    example: "lock_article"
+    delete:
+      tags:
+        - "Articles"
+      summary: "取消点赞文章"
+      description: "给文章取消点赞"
+      parameters:
+        - name: "articleId"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        201:
+          description: "取消点赞成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "like":
+                    type: "number"
+                    description: "点赞人数"
+                    example: "11"
+                  "likeIt":
+                    type: "boolean"
+                    description: "您是否已点赞"
+                    example: false
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在<br>
+                      not_like_it_state  - 您未点赞
+                    example: "invalid_article_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      lock_article       - 文章已被锁定，无法取消点赞<br>
+                      permission_denied  - 小黑屋<br>
+                      not_login_state    - 非登录状态
+                    example: "lock_article"
+  "/Articles/List":
+    get:
+      tags:
+        - "Articles"
+      summary: "获取文章列表"
+      description: "通过用户id获取文章列表"
+      parameters:
+        - name: "userId"
+          in: "query"
+          required: true
+          description: "用户id"
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "获取文章列表成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "articleList":
+                    type: "array"
+                    description: "文章列表"
+                    items:
+                      type: "object"
+                      properties:
+                        "articleId":
+                          type: "string"
+                          description: "文章id"
+                          example: "1"
+                        "url":
+                          type: "string"
+                          description: "文章链接"
+                          example: "https://xmatrix.studio/hiworld"
+                        "title":
+                          type: "string"
+                          description: "文章标题"
+                          example: "Hi, XMatrix"
+                        "summary":
+                          type: "string"
+                          description: "文章摘要"
+                          example: "Hi, world~"
+  "/Articles/Status":
+    get:
+      tags:
+        - "Articles"
+      summary: "获取文章状态"
+      description: "获取文章点赞人数和访问人数以及是否锁定，顺便访问人数+1"
+      parameters:
+        - name: "articleId"
+          in: "query"
+          required: true
+          description: "文章id"
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "获取文章状态成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "visit":
+                    type: "number"
+                    description: "访问人数"
+                    example: "32"
+                  "like":
+                    type: "number"
+                    description: "点赞人数"
+                    example: "12"
+                  "likeIt":
+                    type: "boolean"
+                    description: "您是否已点赞，仅登录时有效"
+                    example: true
+                  "lock":
+                    type: "boolean"
+                    description: "文章是否锁定"
+                    example: false
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_article_id - 文章不存在
+                    example: "invalid_article_id"
+  "/Website/Page":
+    get:
+      tags:
+        - "Website"
+      summary: "获取页面"
+      description: "获取页面的文本信息，包括头部yaml信息，用于页面修改"
+      parameters:
+        - name: "pageId"
+          in: "query"
+          description: "页面id"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "获取页面成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "text":
+                    type: "string"
+                    description: "页面内容，markdown格式"
+                    example: "# Hi, XMatrix\n"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_page_id - 页面不存在
+                    example: "invalid_page_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 用户没有管理员权限<br>
+                      not_login_state   - 非登录状态
+                    example: "permission_denied"
+    post:
+      tags:
+        - "Website"
+      summary: "新建页面"
+      description: "新建页面，仅针对有管理员级别的用户"
+      parameters:
+        - name: "text"
+          in: "query"
+          description: "页面内容，markdown格式，包括头部yaml信息，但信息不能存在date、author等特殊字段"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        301:
+          description: "新建页面成功，重定向至页面链接"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_yaml  - yaml信息不合法<br>
+                      duplicate_url - 生成url链接重复
+                    example: "invalid_yaml"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 用户没有管理员权限<br>
+                      not_login_state   - 非登录状态
+                    example: "permission_denied"
+    put:
+      tags:
+        - "Website"
+      summary: "修改页面"
+      description: "修改页面，仅针对于有管理员权限的用户"
+      parameters:
+        - name: "pageId"
+          in: "query"
+          description: "页面id"
+          required: true
+          schema:
+            type: "string"
+        - name: "text"
+          in: "query"
+          description: "页面内容，markdown格式，包括头部yaml信息，但信息不能存在date、author等特殊字段"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        301:
+          description: "修改页面成功，重定向到页面链接"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_page_id - 页面不存在<br>
+                      invalid_yaml    - yaml信息不合法<br>
+                      duplicate_url   - 生成url链接重复
+                    example: "invalid_yaml"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 用户没有管理员权限<br>
+                      not_login_state   - 非登录状态
+                    example: "permission_denied"
+    delete:
+      tags:
+        - "Website"
+      summary: "删除页面"
+      description: "删除页面，个人主页删除不需要重定向，在该页面页面删除需要重定向"
+      parameters:
+        - name: "pageId"
+          in: "query"
+          description: "页面id"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "在个人主页删除页面成功，不返回任何信息"
+        301:
+          description: "在页面链接删除页面成功，重定向至首页"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_page_id - 页面不存在
+                    example: "invalid_page_id"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 用户没有管理员权限<br>
+                      not_login_state   - 非登录状态
+                    example: "permission_denied"
+  "/Website/Page/List":
+    get:
+      tags:
+        - "Website"
+      summary: "获取页面列表"
+      description: "获取页面列表，用于管理员权限"
+      responses:
+        200:
+          description: "获取页面列表成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "pageList":
+                    type: "array"
+                    description: "页面列表"
+                    items:
+                      type: "object"
+                      properties:
+                        "pageId":
+                          type: "string"
+                          description: "页面id"
+                          example: "1"
+                        "url":
+                          type: "string"
+                          description: "页面链接"
+                          example: "https://xmatrix.studio/violet"
+                        "title":
+                          type: "string"
+                          description: "页面标题"
+                          example: "Violet - User System"
+                        "summary":
+                          type: "string"
+                          description: "页面摘要"
+                          example: "# Introduction"
+  "/Website/Permission":
+    put:
+      tags:
+        - "Website"
+      summary: "设置用户权限"
+      description: "设置用户的权限，只能设置比自己级别低的权限，该接口不用于小黑屋，不能设置自身"
+      parameters:
+        - name: "userName"
+          in: "query"
+          description: "用户名"
+          schema:
+            type: "string"
+        - name: "class"
+          in: "query"
+          description: |
+            用户级别<br>
+            -1     - 小黑屋群众<br>
+            0      - 订阅者<br>
+            1 ~ 10 - 作者<br>
+            50     - 管理员<br>
+            99     - 站长
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "设置权限成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_user_name  - 用户不存在<br>
+                      invalid_user_class - 用户级别非法
+                    example: "invalid_user_name"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_login_state   - 非登录状态<br>
+                      permission_denied - 权限不足，没有管理员权限
+                    example: "permission_denied"
+  "/Website/Report":
+    get:
+      tags:
+        - "Website"
+      summary: "获取小黑屋列表"
+      description: "获取小黑屋用户列表，用于小黑屋设置"
+      responses:
+        200:
+          description: "获取小黑屋列表成功"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "userList":
+                    type: "array"
+                    description: "小黑屋用户列表"
+                    items:
+                      type: "string"
+                      description: "用户id"
+                      example: "10"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_login_state   - 非登录状态<br>
+                      permission_denied - 权限不足，没有管理员权限
+                    example: "permission_denied"
+    post:
+      tags:
+        - "Website"
+      summary: "新增小黑屋用户"
+      description: "新增用户至小黑屋"
+      parameters:
+        - name: "userName"
+          in: "query"
+          required: true
+          description: "用户名"
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "新增小黑屋用户成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_user_name - 用户不存在<br>
+                      in_report_state   - 用户已在小黑屋中
+                    example: "invalid_user_name"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_login_state   - 非登录状态<br>
+                      permission_denied - 权限不足，没有管理员权限
+                    example: "permission_denied"
+    delete:
+      tags:
+        - "Website"
+      summary: "删除小黑屋用户"
+      description: "将用户从小黑屋中移除"
+      parameters:
+        - name: "userName"
+          in: "query"
+          required: true
+          description: "用户名"
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "删除小黑屋用户成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_user_name   - 用户不存在<br>
+                      not_in_report_state - 用户不在小黑屋中
+                    example: "invalid_user_name"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      not_login_state   - 非登录状态<br>
+                      permission_denied - 权限不足，没有管理员权限
+                    example: "permission_denied"
+  "/Website/Setting":
+    put:
+      tags:
+        - "Website"
+      summary: "设置网站信息"
+      description: "设置网站的基本信息"
+      parameters:
+        - name: "title"
+          in: "query"
+          required: true
+          description: "网站标题"
+          schema:
+            type: "string"
+        - name: "subtitle"
+          in: "query"
+          description: "网站副标题"
+          schema:
+            type: "string"
+        - name: "introduction"
+          in: "query"
+          description: "网站介绍"
+          schema:
+            type: "string"
+        - name: "urlType"
+          in: "query"
+          required: true
+          description: "网站链接类型，%%格式符形式表达，比如 %categories% 表示分类，其余形式待定"
+          schema:
+            type: "string"
+      responses:
+        204:
+          description: "设置成功"
+        400:
+          description: "参数错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      invalid_title - 标题非法<br>
+                      invalid_url_type - url type格式错误
+                    example: "invalid_title"
+        401:
+          description: "权限错误"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  "error":
+                    type: "string"
+                    description: |
+                      错误信息<br>
+                      permission_denied - 权限不足，没有站长权限
+                    example: "permission_denied"
