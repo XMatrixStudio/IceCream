@@ -1,15 +1,17 @@
-package mongo
+package model
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/XMatrixStudio/icecream/config"
 	"gopkg.in/mgo.v2"
 )
 
-// Init 初始化连接
-func Init() {
+// DB 数据库实例
+var DB *mgo.Database
+
+// InitMongo 初始化连接
+func InitMongo() error {
 	session, err := mgo.Dial(
 		"mongodb://" +
 			config.Mongo.User +
@@ -18,10 +20,10 @@ func Init() {
 			":" + config.Mongo.Port +
 			"/" + config.Mongo.Name)
 	if err != nil {
-		log.Fatalln(err)
-	} else {
-		fmt.Println("Mongodb Connent Success")
+		return err
 	}
-	db := session.DB(config.Mongo.Name)
-	db.C("users")
+	fmt.Println("Mongodb Connect Success")
+	DB = session.DB(config.Mongo.Name)
+	UserDB = DB.C("users")
+	return nil
 }
