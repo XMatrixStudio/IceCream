@@ -25,5 +25,10 @@ func InitMongo() error {
 	fmt.Println("Mongodb Connect Success")
 	DB = session.DB(config.Mongo.Name)
 	UserDB = DB.C("users")
+	ContentDB = DB.C("content")
+	CommentDB = DB.C("comment")
+	ContentLikeDB = DB.C("like")
+	CommentLikeDB = DB.C("commentLike")
+	UserLikeDB = DB.C("userLike")
 	return nil
 }
