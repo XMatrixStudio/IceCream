@@ -5,7 +5,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// User 用户基本信息
+// Comment 评论
 type Comment struct {
 	Id_       bson.ObjectId `bson:"_id"`
 	ArticleID string        `bson:"articleId"` // 文章ID 【索引】
@@ -16,4 +16,5 @@ type Comment struct {
 	Top       bool          `bson:"top"`       // 是否置顶
 }
 
+// CommentDB 评论数据库
 var CommentDB *mgo.Collection

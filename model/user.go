@@ -9,7 +9,7 @@ import (
 type User struct {
 	Id_   bson.ObjectId `bson:"_id"`   // 用户ID
 	Name  string        `bson:"name"`  // 用户唯一名字
-	Class int           `bson:"class"` // 用户类型
+	Class string        `bson:"class"` // 用户类型 "admin", "reader", "writer"
 	Info  UserInfo      `bson:"info"`  // 用户个性信息
 }
 
@@ -33,7 +33,9 @@ var UserDB *mgo.Collection
 func AddUser() (bson.ObjectId, error) {
 	newUser := bson.NewObjectId()
 	err := UserDB.Insert(&User{
-		Id_: bson.NewObjectId(),
+		Id_:   newUser,
+		Name:  "user_" + string(newUser),
+		Class: "reader",
 	})
 	if err != nil {
 		return "", err
@@ -45,6 +47,24 @@ func AddUser() (bson.ObjectId, error) {
 func SetUserInfo(id string, info UserInfo) bool {
 	data := bson.M{"$set": info}
 	_, err := UserDB.UpsertId(bson.ObjectIdHex(id), data)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// SetUserName 设置用户名
+func SetUserName(id, name string) bool {
+	_, err := UserDB.UpsertId(bson.ObjectIdHex(id), bson.M{"$set": bson.M{"name": name}})
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// SetUserClass 设置用户类型
+func SetUserClass(id, class string) bool {
+	_, err := UserDB.UpsertId(bson.ObjectIdHex(id), bson.M{"$set": bson.M{"class": class}})
 	if err != nil {
 		return false
 	}
