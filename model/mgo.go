@@ -30,5 +30,6 @@ func InitMongo() error {
 	ContentLikeDB = DB.C("like")
 	CommentLikeDB = DB.C("commentLike")
 	UserLikeDB = DB.C("userLike")
+	NotificationDB = DB.C("notification")
 	return nil
 }
