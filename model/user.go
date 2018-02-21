@@ -44,9 +44,9 @@ func AddUser() (bson.ObjectId, error) {
 // SetUserInfo 设置用户信息
 func SetUserInfo(id string, info UserInfo) bool {
 	data := bson.M{"$set": info}
-	changeInfo, err := UserDB.UpsertId(bson.ObjectIdHex(id), data)
+	_, err := UserDB.UpsertId(bson.ObjectIdHex(id), data)
 	if err != nil {
-		panic(err)
+		return false
 	}
 	return true
 }
