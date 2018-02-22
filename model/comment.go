@@ -18,3 +18,19 @@ type Comment struct {
 
 // CommentDB 评论数据库
 var CommentDB *mgo.Collection
+
+// AddComment 增加评论
+func AddComment(article, user, content, fatherID string) (bson.ObjectId, error) {
+	newComment := bson.NewObjectId()
+	err := CommentDB.Insert(&Comment{
+		Id_:       newComment,
+		ArticleID: article,
+		UserID:    user,
+		Content:   content,
+		FatherID:  fatherID,
+	})
+	if err != nil {
+		return "", err
+	}
+	return newComment, nil
+}

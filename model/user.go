@@ -70,3 +70,13 @@ func SetUserClass(id, class string) bool {
 	}
 	return true
 }
+
+// GetByID 根据ID查询用户
+func GetByID(id string) *User {
+	user := new(User)
+	err := UserDB.FindId(id).One(&user)
+	if err != nil {
+		return nil
+	}
+	return user
+}
