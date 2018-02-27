@@ -7,10 +7,11 @@ import (
 
 // User 用户基本信息
 type User struct {
-	Id_   bson.ObjectId `bson:"_id"`   // 用户ID
-	Name  string        `bson:"name"`  // 用户唯一名字
-	Class string        `bson:"class"` // 用户类型 "admin", "reader", "writer"
-	Info  UserInfo      `bson:"info"`  // 用户个性信息
+	Id_     bson.ObjectId `bson:"_id"`     // 用户ID
+	Name    string        `bson:"name"`    // 用户唯一名字
+	Class   string        `bson:"class"`   // 用户类型 "admin", "reader", "writer"
+	Info    UserInfo      `bson:"info"`    // 用户个性信息
+	LikeNum int64         `bson:"likeNum"` // 收到的点赞数
 }
 
 // UserInfo 用户个性信息
@@ -40,43 +41,38 @@ func AddUser() (bson.ObjectId, error) {
 	if err != nil {
 		return "", err
 	}
+	success := InitNotification(string(newUser))
+	if success != nil {
+		return "", err
+	}
 	return newUser, nil
 }
 
 // SetUserInfo 设置用户信息
-func SetUserInfo(id string, info UserInfo) bool {
+func SetUserInfo(id string, info UserInfo) error {
 	data := bson.M{"$set": info}
 	_, err := UserDB.UpsertId(bson.ObjectIdHex(id), data)
-	if err != nil {
-		return false
-	}
-	return true
+	return err
 }
 
 // SetUserName 设置用户名
-func SetUserName(id, name string) bool {
+func SetUserName(id, name string) error {
 	_, err := UserDB.UpsertId(bson.ObjectIdHex(id), bson.M{"$set": bson.M{"name": name}})
-	if err != nil {
-		return false
-	}
-	return true
+	return err
 }
 
 // SetUserClass 设置用户类型
-func SetUserClass(id, class string) bool {
+func SetUserClass(id, class string) error {
 	_, err := UserDB.UpsertId(bson.ObjectIdHex(id), bson.M{"$set": bson.M{"class": class}})
-	if err != nil {
-		return false
-	}
-	return true
+	return err
 }
 
-// GetByID 根据ID查询用户
-func GetByID(id string) *User {
+// GetUserByID 根据ID查询用户
+func GetUserByID(id string) (*User, error) {
 	user := new(User)
 	err := UserDB.FindId(id).One(&user)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return user
+	return user, nil
 }
