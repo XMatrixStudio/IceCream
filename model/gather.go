@@ -1,6 +1,8 @@
 package model
 
 import (
+	"errors"
+
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -20,3 +22,65 @@ var (
 	// UserLikeDB 用户点赞文章或评论的ID的集合
 	UserLikeDB *mgo.Collection
 )
+
+// AddLikeToContent 增加Like到文章里面
+func AddLikeToContent(contentID, userID string) error {
+	info, err := ContentLikeDB.Upsert(bson.M{"id": contentID}, bson.M{"$addToSet": bson.M{"ids": userID}})
+	if info.Matched == 0 {
+		return errors.New("Had exits")
+	}
+	if err != nil {
+		return err
+	}
+	info, err = UserLikeDB.Upsert(bson.M{"id": userID}, bson.M{"$addToSet": bson.M{"ids": contentID}})
+	if info.Matched == 0 {
+		return errors.New("Had exits")
+	}
+	return err
+}
+
+// RemoveLikeFromContent 取消点赞内容
+func RemoveLikeFromContent(contentID, userID string) error {
+	err := ContentLikeDB.Update(bson.M{"id": contentID}, bson.M{"$pull": bson.M{"ids": userID}})
+	if err != nil {
+		return err
+	}
+	err = UserLikeDB.Update(bson.M{"id": userID}, bson.M{"$pull": bson.M{"ids": contentID}})
+	return err
+}
+
+// AddLikeToComment 增加Like到评论里面
+func AddLikeToComment(commentID, userID string) error {
+	info, err := CommentLikeDB.Upsert(bson.M{"id": commentID}, bson.M{"$addToSet": bson.M{"ids": userID}})
+	if info.Matched == 0 {
+		return errors.New("Had exits")
+	}
+	if err != nil {
+		return err
+	}
+	info, err = UserLikeDB.Upsert(bson.M{"id": userID}, bson.M{"$addToSet": bson.M{"ids": commentID}})
+	if info.Matched == 0 {
+		return errors.New("Had exits")
+	}
+	return err
+}
+
+// RemoveLikeFromComment 取消点赞评论
+func RemoveLikeFromComment(commentID, userID string) error {
+	err := CommentLikeDB.Update(bson.M{"id": commentID}, bson.M{"$pull": bson.M{"ids": userID}})
+	if err != nil {
+		return err
+	}
+	err = UserLikeDB.Update(bson.M{"id": userID}, bson.M{"$pull": bson.M{"ids": commentID}})
+	return err
+}
+
+// GetUserLikes 获取用户点赞的集合
+func GetUserLikes(userID string) ([]string, error) {
+	var gather Gather
+	err := UserLikeDB.Find(bson.M{"id": userID}).One(&gather)
+	if err != nil {
+		return nil, err
+	}
+	return gather.IDs, nil
+}
