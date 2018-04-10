@@ -2,12 +2,13 @@ package main
 
 import (
 	"net/http"
+
 	"github.com/XMatrixStudio/IceCream/router"
-	"github.com/XMatrixStudio/icecream/lib"
+	"github.com/XMatrixStudio/icecream/model"
 )
 
 func main() {
-	err := lib.InitMongo() // 连接Mongo数据库
+	err := model.InitMongo() // 连接Mongo数据库
 	if err != nil {
 		panic(err)
 	}
