@@ -1,0 +1,16 @@
+Server:
+  Url: https://xmatrix.studio/
+  Host: 127.0.0.1
+  Port: 30033
+  Dev: true
+Mongo:
+  Host: 119.29.103.176
+  Port: 27017
+  User: xmatrix
+  Password: X2YyS142TigYJBfiudPI
+  Name: xmatrix_studio
+Violet:
+  ClientID: 5b2868aa427c6a7de2432df6
+  ClientKey: qzujei5r35f1e54weibo2l3n
+  ServerHost: https://oauth.xmatrix.studio/api/v2/
+  LoginURL: https://oauth.xmatrix.studio/Verify/Authorize/

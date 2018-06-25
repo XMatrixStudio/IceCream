@@ -1,0 +1,15 @@
+{{ define "navigation" }}
+<button onclick="login()">登录</button>
+<button onclick="register()">注册</button>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    async function login() {
+        await axios.get('http://127.0.0.1:30033/users/login')
+        console.log("login")
+    }
+
+    function register() {
+        window.location.href = "https://oauth.xmatrix.studio/register"
+    }
+</script>
+{{ end }}
