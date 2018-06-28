@@ -12,5 +12,5 @@
 *.out
 
 # Config
-config/config.go
+config/config.yaml
 .vscode/*
