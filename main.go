@@ -18,6 +18,7 @@ func main() {
 		generator.Generate("default")
 		return
 	}
+	generator.Generate("default")
 	data, err := ioutil.ReadFile(*configFile)
 	if err != nil {
 		log.Printf("Can't find the config file in %v", *configFile)

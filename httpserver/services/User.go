@@ -9,7 +9,7 @@ type UserService interface {
 	InitViolet(c violetSdk.Config)
 	// 登陆部分API
 	GetLoginURL(redirectURL string) (url, state string)
-	InitUserOrNot(code string) (token, userID string, err error)
+	InitUserOrNot(code string) (user models.User, err error)
 	//Login(name, password string) (valid bool, email string, err error)
 	//GetUser(code string) (ID, name string, err error)
 	//Register(name, email, password string) (err error)
@@ -35,20 +35,32 @@ func (s *userService) GetLoginURL(redirectURL string) (url, state string) {
 	return
 }
 
-func (s *userService) InitUserOrNot(code string) (token, userID string, err error) {
-	tRes, tErr := s.Violet.GetToken(code)
-	if tErr != nil {
-		err = tErr
+func (s *userService) InitUserOrNot(code string) (user models.User, err error) {
+	tRes, err := s.Violet.GetToken(code)
+	if err != nil {
 		return
 	}
 	token, userVID := tRes.Token, tRes.UserID
-	_, tErr = s.Violet.GetUserBaseInfo(userVID, token)
-	if tErr != nil {
-		err = tErr
+	uRes, err := s.Violet.GetUserBaseInfo(userVID, token)
+	if err != nil {
 		return
 	}
-	_, tErr = s.Model.GetUserByVID(userVID)
-	// Add User into DB
+	user, err = s.Model.GetUserByVID(userVID)
+	if err != nil {
+		_, err := s.Model.AddUser(userVID, uRes.Name, uRes.Email, token, uRes.Info.Avatar, uRes.Info.Gender)
+		if err != nil {
+			return user, err
+		}
+		err = nil
+		user, err = s.Model.GetUserByVID(userVID)
+		if err != nil {
+			return user, err
+		}
+	} else {
+		if user.Token != token {
+			err = s.Model.SetUserToken(user.ID.Hex(), token)
+		}
+	}
 	return
 }
 

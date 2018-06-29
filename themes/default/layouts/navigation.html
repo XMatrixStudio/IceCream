@@ -50,7 +50,7 @@
             <p id="user" class="dropdown-item-text font-weight-light"></p>
             <div class="dropdown-divider"></div>
             <a class="dropdown-item">设置</a>
-            <a class="dropdown-item">注销</a>
+            <a class="dropdown-item" onclick="logout()">注销</a>
           </div>
         </li>
       </ul>
@@ -64,15 +64,23 @@
     let avatar = Cookies.get('avatar')
     if (user) {
       $('#user').html(user)
-      $('#avatar').href = avatar
+      $('#avatar').attr('src', avatar)
       $('.logged').show()
     } else {
       $('.nolog').show()
     }
   }
 
-  async function login() {
-    await axios.get('/api/users/login')
+  function login() {
+    let url = '/api/users/login?url=' + window.location.href
+    window.location.href = url
+  }
+
+  async function logout() {
+    Cookies.remove('user')
+    Cookies.remove('avatar')
+    await axios.delete('/api/users/login')
+    window.location.reload()
   }
 
   window.onload = init

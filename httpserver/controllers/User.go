@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"fmt"
+	"net/http"
 
 	"github.com/XMatrixStudio/IceCream/httpserver/services"
 	"github.com/kataras/iris"
@@ -25,12 +25,19 @@ type LoginReq struct {
 }
 
 func (c *UsersController) GetLogin() (result CommonRes) {
-	redirectURL := "http://" + c.Ctx.Host() + c.Ctx.Path()
-	fmt.Println("hello: " + redirectURL)
+	redirectURL := c.Ctx.FormValue("url")
+	if c.Session.GetString("userID") != "" {
+		c.Ctx.Redirect(redirectURL)
+		return
+	}
 	url, state := c.Service.GetLoginURL(redirectURL)
 	c.Session.Set("state", state)
 	c.Ctx.Redirect(url)
 	return
+}
+
+func (c *UsersController) DeleteLogin() {
+	c.Session.Clear()
 }
 
 type verifyReq struct {
@@ -50,7 +57,26 @@ func (c *UsersController) GetVerify() (result CommonRes) {
 		result.Data = "invalid_state"
 		return
 	}
-	c.Service.InitUserOrNot(req.code)
+	user, err := c.Service.InitUserOrNot(req.code)
+	if err != nil {
+		result.State = "error"
+		result.Data = "invalid_init"
+		return
+	}
+	c.Session.Delete("state")
+	c.Session.Set("userID", user.ID.Hex())
+	c.Ctx.SetCookie(&http.Cookie{
+		Name:     "user",
+		Value:    user.Name,
+		Path:     "/",
+		HttpOnly: false,
+	})
+	c.Ctx.SetCookie(&http.Cookie{
+		Name:     "avatar",
+		Value:    user.Info.Avatar,
+		Path:     "/",
+		HttpOnly: false,
+	})
 	c.Ctx.Redirect(req.redirectURL)
 	return
 }

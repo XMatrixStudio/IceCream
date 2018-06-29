@@ -13,7 +13,8 @@ import (
 var t *template.Template
 
 type pageIndexParams struct {
-	Tmpl string
+	Tmpl  string
+	Title string
 }
 
 func Generate(theme string) {
@@ -44,7 +45,8 @@ func Generate(theme string) {
 			continue
 		}
 		err = t.ExecuteTemplate(f, "index", pageIndexParams{
-			Tmpl: tmpl.String(),
+			Tmpl:  tmpl.String(),
+			Title: "XMatrix",
 		})
 		if err != nil {
 			fmt.Println("Execute fail: " + tName)
