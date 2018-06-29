@@ -1,0 +1,87 @@
+{{ define "navigation" }}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="/">{{ .Title }}</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarItems" aria-controls="navbarItems"
+      aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarItems">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="#">首页
+            <span class="sr-only">(current)</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">归档</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">关于</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav ml-auto">
+        <li class="nolog nav-item">
+          <a onclick="login()" class="nav-link">登录</a>
+        </li>
+        <li class="nolog nav-item">
+          <span class="navbar-text">或</span>
+        </li>
+        <li class="nolog nav-item">
+          <a class="nav-link" href="https://oauth.xmatrix.studio/register" target="_black">注册</a>
+        </li>
+        <li hidden class="logged nav-item">
+          <a class="nav-link" href="https://blog.zhenly.cn" style="margin-top:4px; font-size:16px;">
+            <i class="fas fa-bell"></i>
+          </a>
+        </li>
+        <li hidden class="logged nav-item">
+          <a class="nav-link" href="https://blog.zhenly.cn" style="margin-top:4px; font-size:16px;">
+            <i class="fas fa-plus"></i>
+          </a>
+        </li>
+        <li class="logged nav-item dropdown">
+          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" id="navUser" aria-haspopup="true" aria-expanded="false">
+            <img id="avatar" class="rounded d-block mx-auto float-left" style="display:inline-block; vertical-align:middle; height:24px;"
+            />
+            <span class="caret" style="display:inline-block; vertical-align: middle"></span>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navUser">
+            <p id="user" class="dropdown-item-text font-weight-light"></p>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item">设置</a>
+            <a class="dropdown-item">注销</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<script>
+  async function init() {
+    let user = Cookies.get('user')
+    let avatar = Cookies.get('avatar')
+    if (user) {
+      $('#user').html(user)
+      $('#avatar').href = avatar
+      $('.logged').show()
+    } else {
+      $('.nolog').show()
+    }
+  }
+
+  async function login() {
+    await axios.get('/api/users/login')
+  }
+
+  window.onload = init
+</script>
+
+<style>
+  .nolog,
+  .logged {
+    display: none;
+  }
+</style>
+{{ end }}

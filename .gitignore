@@ -14,3 +14,7 @@
 # Config
 config/config.yaml
 .vscode/*
+
+
+# Html Dist
+dist/

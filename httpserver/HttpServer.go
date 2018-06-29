@@ -14,10 +14,11 @@ import (
 
 // HTTPConfig 配置文件
 type HTTPConfig struct {
-	URL  string `yaml:"Url"`  // Url
-	Host string `yaml:"Host"` // 服务器监听地址
-	Port string `yaml:"Port"` // 服务器监听端口
-	Dev  bool   `yaml:"Dev"`  // 是否开发环境
+	URL    string `yaml:"Url"`    // Url
+	APIDir string `yaml:"ApiDir"` // Api Url
+	Host   string `yaml:"Host"`   // 服务器监听地址
+	Port   string `yaml:"Port"`   // 服务器监听端口
+	Dev    bool   `yaml:"Dev"`    // 是否开发环境
 }
 
 // Config 配置文件
@@ -49,19 +50,26 @@ func RunServer(c Config) {
 		Expires: 24 * time.Hour,
 	})
 	// "/users" based mvc application.
-	users := mvc.New(app.Party("/users"))
+	users := mvc.New(app.Party(c.HTTPServer.APIDir + "/users"))
 	// Bind the "userService" to the UserController's Service (interface) field.
 	users.Register(userService, sessManager.Start)
 	users.Handle(new(controllers.UsersController))
 
 	articleService := Service.NewArticleService()
-	articles := mvc.New(app.Party("/articles"))
+	articles := mvc.New(app.Party(c.HTTPServer.APIDir + "/articles"))
 	articles.Register(articleService)
 	articles.Handle(new(controllers.ArticlesController))
+
+	app.StaticWeb("/", "./dist/")
+
+	appConf := iris.Configuration{
+		DisablePathCorrection: true,
+	}
 
 	app.Run(
 		// Starts the web server
 		iris.Addr(c.HTTPServer.Host+":"+c.HTTPServer.Port),
+		iris.WithConfiguration(appConf),
 		// Disables the updater.
 		iris.WithoutVersionChecker,
 		// Ignores err server closed log when CTRL/CMD+C pressed.

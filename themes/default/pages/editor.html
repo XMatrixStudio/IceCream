@@ -1,0 +1,40 @@
+{{ define "editor" }}
+<div class="container">
+  <div class="form-group">
+    <div class="row">
+      <div class="col">
+        <label class="col-form-label" for="inputDefault">标题</label>
+        <input type="text" class="form-control" placeholder="请输入文章的标题" />
+      </div>
+      <div class="col">
+        <label class="col-form-label" for="inputDefault">Url</label>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">https://xmatrix.studio/</span>
+          </div>
+          <input type="text" class="form-control" placeholder="请输入文章生成的Url" />
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <label for="exampleTextarea">文章内容</label>
+        <textarea class="form-control" rows="20"></textarea>
+      </div>
+    </div>
+    <div class="row" style="margin-top:20px;">
+      <div class="col">
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="isComment" checked="">
+          <label style="padding-top:3px;" class="custom-control-label" for="isComment">是否允许评论</label>
+        </div>
+      </div>
+      <div class="col">
+        <div class="float-right">
+          <button type="button" class="btn btn-success">提交</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ end }}
