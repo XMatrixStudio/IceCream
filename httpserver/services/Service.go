@@ -19,12 +19,14 @@ func NewService(m *models.Model) *Service {
 // NewUserService 创建用户服务
 func (s *Service) NewUserService() UserService {
 	return &userService{
-		Model: s.Model.User,
+		Model:   s.Model.User,
+		Service: s,
 	}
 }
 
 func (s *Service) NewArticleService() ArticleService {
 	return &articleService{
-		Model: s.Model.Article,
+		Model:   s.Model.Article,
+		Service: s,
 	}
 }

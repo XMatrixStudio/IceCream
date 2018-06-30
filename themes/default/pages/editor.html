@@ -4,7 +4,7 @@
     <div class="row">
       <div class="col">
         <label class="col-form-label" for="inputDefault">标题</label>
-        <input type="text" class="form-control" placeholder="请输入文章的标题" />
+        <input id="title" type="text" class="form-control" placeholder="请输入文章的标题" />
       </div>
       <div class="col">
         <label class="col-form-label" for="inputDefault">Url</label>
@@ -12,29 +12,120 @@
           <div class="input-group-prepend">
             <span class="input-group-text">https://xmatrix.studio/</span>
           </div>
-          <input type="text" class="form-control" placeholder="请输入文章生成的Url" />
+          <input id="url" type="text" class="form-control" placeholder="请输入文章生成的Url" />
         </div>
       </div>
     </div>
     <div class="row">
       <div class="col">
         <label for="exampleTextarea">文章内容</label>
-        <textarea class="form-control" rows="20"></textarea>
+        <textarea id="text" class="form-control" rows="20" placeholder="请输入文章的内容"></textarea>
       </div>
     </div>
     <div class="row" style="margin-top:20px;">
       <div class="col">
         <div class="custom-control custom-checkbox">
-          <input type="checkbox" class="custom-control-input" id="isComment" checked="">
-          <label style="padding-top:3px;" class="custom-control-label" for="isComment">是否允许评论</label>
+          <input type="checkbox" class="custom-control-input" id="comment" checked="">
+          <label style="padding-top:3px;" class="custom-control-label" for="comment">是否允许评论</label>
         </div>
       </div>
       <div class="col">
         <div class="float-right">
-          <button type="button" class="btn btn-success">提交</button>
+          <button id="btn" onclick="submit()" type="button" class="btn btn-success">提交</button>
         </div>
       </div>
     </div>
   </div>
 </div>
-{{ end }}
+
+<script>
+  const editorPreOnload = window.onload
+  window.onload = () => {
+    if (editorPreOnload) editorPreOnload()
+    editorInit()
+  }
+
+  async function editorInit() {
+    if (!Cookies.get('user')) {
+      $('#title').attr('disabled', '')
+      $('#url').attr('disabled', '')
+      $('#text').attr('disabled', '')
+      $('#comment').attr('disabled', '')
+      $('#btn').attr('disabled', '')
+      dialog({
+        title: '没有权限',
+        description: '请先登录'
+      })
+    }
+    let query = window.location.search
+    let params = {}
+    if (query[0] === '?') {
+      let arr = query.substr(1).split('&')
+      for (let i of arr) {
+        i = i.split('=')
+        if (i.length !== 2) continue
+        params[i[0]] = i[1]
+      }
+      if (params.url) {
+        let res = await axios.get('/api/articles', {
+          params: {
+            url: params.url
+          }
+        })
+        let data = res.data
+        if (data === null) {
+          dialog({
+            title: '服务器错误',
+            description: '请稍后重试'
+          })
+        } else if (data.state === 'error') {
+          dialog({
+            title: '请求错误',
+            description: data.msg
+          })
+        } else {
+          window.oldurl = data.article.url
+          $('#title').val(data.article.title)
+          $('#url').val(data.article.url)
+          $('#comment').attr('checked', data.article.comment)
+          $('#text').val(data.article.text)
+        }
+      }
+    }
+  }
+
+  async function submit() {
+    let res
+    if (window.oldurl) {
+      res = await axios.put('/api/articles', {
+        title: $('#title').val(),
+        oldurl: window.oldurl,
+        url: $('#url').val(),
+        comment: $('#comment').is(':checked'),
+        text: $('#text').val()
+      })
+    } else {
+      res = await axios.post('/api/articles', {
+        title: $('#title').val(),
+        url: $('#url').val(),
+        comment: $('#comment').is(':checked'),
+        text: $('#text').val()
+      })
+    }
+    let data = res.data
+    if (data === null) {
+      dialog({
+        title: '服务器错误',
+        description: '请稍后重试'
+      })
+    } else if (data.state === 'error') {
+      dialog({
+        title: '请求错误',
+        description: data.msg
+      })
+    } else {
+
+    }
+  }
+
+</script> {{ end }}

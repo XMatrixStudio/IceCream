@@ -59,7 +59,13 @@
 </nav>
 
 <script>
-  async function init() {
+  const navigationPreOnload = window.onload
+  window.onload = () => {
+    if (navigationPreOnload) navigationPreOnload()
+    navigationInit()
+  }
+
+  function navigationInit() {
     let user = Cookies.get('user')
     let avatar = Cookies.get('avatar')
     if (user) {
@@ -82,8 +88,6 @@
     await axios.delete('/api/users/login')
     window.location.reload()
   }
-
-  window.onload = init
 </script>
 
 <style>

@@ -10,6 +10,7 @@ type UserService interface {
 	// 登陆部分API
 	GetLoginURL(redirectURL string) (url, state string)
 	InitUserOrNot(code string) (user models.User, err error)
+	Logout(userID string) (err error)
 	//Login(name, password string) (valid bool, email string, err error)
 	//GetUser(code string) (ID, name string, err error)
 	//Register(name, email, password string) (err error)
@@ -20,8 +21,9 @@ type UserService interface {
 }
 
 type userService struct {
-	Model  models.UserModel
-	Violet violetSdk.Violet
+	Model   models.UserModel
+	Service *Service
+	Violet  violetSdk.Violet
 }
 
 type LoginRes struct {
@@ -33,6 +35,10 @@ type LoginRes struct {
 func (s *userService) GetLoginURL(redirectURL string) (url, state string) {
 	url, state = s.Violet.GetLoginURL(redirectURL)
 	return
+}
+
+func (s *userService) Logout(userID string) (err error) {
+	return s.Service.Model.Log.AddLogRecord(userID, "注销")
 }
 
 func (s *userService) InitUserOrNot(code string) (user models.User, err error) {
@@ -47,19 +53,27 @@ func (s *userService) InitUserOrNot(code string) (user models.User, err error) {
 	}
 	user, err = s.Model.GetUserByVID(userVID)
 	if err != nil {
-		_, err := s.Model.AddUser(userVID, uRes.Name, uRes.Email, token, uRes.Info.Avatar, uRes.Info.Gender)
+		_, err = s.Model.AddUser(userVID, uRes.Name, uRes.Email, token, uRes.Info.Avatar, uRes.Info.Gender)
 		if err != nil {
-			return user, err
+			return
 		}
-		err = nil
 		user, err = s.Model.GetUserByVID(userVID)
 		if err != nil {
-			return user, err
+			return
+		}
+		err = s.Service.Model.Log.AddLogDocument(user.ID.Hex())
+		if err != nil {
+			return
+		}
+		err = s.Service.Model.Log.AddLogRecord(user.ID.Hex(), "注册")
+		if err != nil {
+			return
 		}
 	} else {
 		if user.Token != token {
 			err = s.Model.SetUserToken(user.ID.Hex(), token)
 		}
+		err = s.Service.Model.Log.AddLogRecord(user.ID.Hex(), "登录")
 	}
 	return
 }

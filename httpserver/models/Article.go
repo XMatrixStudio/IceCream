@@ -14,7 +14,7 @@ type ArticleModel struct {
 // Article 内容
 type Article struct {
 	ID          bson.ObjectId `bson:"_id"`
-	Name        string        `bson:"name"`        // 文章名字
+	Title       string        `bson:"title"`       // 文章名字
 	URL         string        `bson:"url"`         // 文章内容文件的url地址
 	WriterID    string        `bson:"writerId"`    // 作者ID
 	PublishDate int64         `bson:"publishDate"` // 发布日期
@@ -30,11 +30,11 @@ type Article struct {
 }
 
 // AddArticle 增加内容
-func (m *ArticleModel) AddArticle(name, url, ArticleType, userID, text string, isComment bool) (bson.ObjectId, error) {
+func (m *ArticleModel) AddArticle(title, url, ArticleType, userID, text string, isComment bool) (bson.ObjectId, error) {
 	newArticle := bson.NewObjectId()
 	err := m.DB.Insert(&Article{
 		ID:          newArticle,
-		Name:        name,
+		Title:       title,
 		URL:         url,
 		WriterID:    userID,
 		Comment:     isComment,
@@ -47,6 +47,18 @@ func (m *ArticleModel) AddArticle(name, url, ArticleType, userID, text string, i
 		return "", err
 	}
 	return newArticle, nil
+}
+
+func (m *ArticleModel) UpdateArticle(id, title, url, text string, isComment bool) (err error) {
+	err = m.DB.UpdateId(bson.ObjectIdHex(id), bson.M{
+		"$set": bson.M{
+			"title":   title,
+			"url":     url,
+			"text":    text,
+			"comment": isComment,
+		},
+	})
+	return
 }
 
 // EditArticle 更新修改日期
@@ -91,6 +103,15 @@ func (m *ArticleModel) GetArticleByWriter(id string) []Article {
 		return nil
 	}
 	return Article
+}
+
+func (m *ArticleModel) GetArticleByURL(url string) *Article {
+	article := new(Article)
+	err := m.DB.Find(bson.M{"url": url}).One(&article)
+	if err != nil {
+		return nil
+	}
+	return article
 }
 
 // GetPageArticle 获取内容指定分页内容集合

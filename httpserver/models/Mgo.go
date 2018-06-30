@@ -21,6 +21,7 @@ type Model struct {
 	DB      *mgo.Database
 	User    UserModel
 	Article ArticleModel
+	Log     LogModel
 }
 
 // initMongo 初始化数据库
@@ -41,6 +42,8 @@ func (m *Model) initMongo(conf Mongo) error {
 	}
 	m.DB = session.DB(conf.Name)
 	m.User.DB = m.DB.C("users")
+	m.Log.DB = m.DB.C("logs")
+	m.Article.DB = m.DB.C("articles")
 	log.Printf("MongoDB Connect Success!")
 	return nil
 }

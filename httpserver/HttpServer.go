@@ -57,7 +57,7 @@ func RunServer(c Config) {
 
 	articleService := Service.NewArticleService()
 	articles := mvc.New(app.Party(c.HTTPServer.APIDir + "/articles"))
-	articles.Register(articleService)
+	articles.Register(articleService, sessManager.Start)
 	articles.Handle(new(controllers.ArticlesController))
 
 	app.StaticWeb("/", "./dist/")

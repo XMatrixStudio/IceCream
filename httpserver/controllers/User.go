@@ -37,6 +37,10 @@ func (c *UsersController) GetLogin() (result CommonRes) {
 }
 
 func (c *UsersController) DeleteLogin() {
+	userID := c.Session.GetString("userID")
+	if userID != "" {
+		c.Service.Logout(userID)
+	}
 	c.Session.Clear()
 }
 

@@ -49,6 +49,7 @@ func (m *UserModel) AddUser(vID, name, email, token, avatar string, gender int) 
 			Avatar:   avatar,
 		},
 		Token: token,
+		Level: 0,
 	})
 	if err != nil {
 		return "", err
