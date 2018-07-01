@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/XMatrixStudio/IceCream/httpserver/services"
 	"github.com/kataras/iris"
@@ -78,6 +79,12 @@ func (c *UsersController) GetVerify() (result CommonRes) {
 	c.Ctx.SetCookie(&http.Cookie{
 		Name:     "avatar",
 		Value:    user.Info.Avatar,
+		Path:     "/",
+		HttpOnly: false,
+	})
+	c.Ctx.SetCookie(&http.Cookie{
+		Name:     "level",
+		Value:    strconv.Itoa(user.Level),
 		Path:     "/",
 		HttpOnly: false,
 	})

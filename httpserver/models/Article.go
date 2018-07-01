@@ -105,6 +105,15 @@ func (m *ArticleModel) GetArticleByWriter(id string) []Article {
 	return Article
 }
 
+func (m *ArticleModel) GetAllArticle() []Article {
+	var article []Article
+	err := m.DB.Find(nil).All(&article)
+	if err != nil {
+		return nil
+	}
+	return article
+}
+
 func (m *ArticleModel) GetArticleByURL(url string) *Article {
 	article := new(Article)
 	err := m.DB.Find(bson.M{"url": url}).One(&article)

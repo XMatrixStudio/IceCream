@@ -1,0 +1,50 @@
+{{ define "article" }}
+<div class="container">
+  <div style="margin:50px 0;" class="text-center article-head">
+    <h2>{{ .Title }}</h2>
+    <div>
+      <small class="font-weight-light">
+        <i class="far fa-calendar-alt"></i>
+        <span>发表于</span>
+        <span>{{ .Date }}</span>
+        <span>|</span>
+        <i class="fas fa-pen-nib"></i>
+        <span>作者</span>
+        <span id="writer">{{ .WriterName }}</span>
+        <div id="articleEdit" style="display:none;">
+          <span>|</span>
+          <i class="far fa-edit"></i>
+          <a style="color:black;" href="/editor/?url={{ .URL }}">
+            <u>编辑</u>
+          </a>
+        </div>
+      </small>
+    </div>
+  </div>
+  <div style="margin:0 50px;">
+    {{ .Text }}
+  </div>
+  {{ template "comment" .Comment }}
+</div>
+
+<script>
+  let articlePreOnload = window.onload
+  window.onload = () => {
+    if (articlePreOnload) articlePreOnload()
+    articleInit()
+  }
+
+  function articleInit() {
+    if ($('#writer').html() === Cookies.get('user')) {
+      $('#articleEdit').css('display', 'inline-block')
+    }
+  }
+</script>
+
+<style>
+  .article-head i {
+    color: gray;
+  }
+
+</style>
+{{ end }}

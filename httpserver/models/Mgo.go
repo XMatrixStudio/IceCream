@@ -1,8 +1,11 @@
 package models
 
 import (
+	"fmt"
 	"log"
+	"time"
 
+	"github.com/XMatrixStudio/IceCream/generator"
 	"github.com/globalsign/mgo"
 )
 
@@ -48,9 +51,41 @@ func (m *Model) initMongo(conf Mongo) error {
 	return nil
 }
 
+func (m *Model) buildAllArticles() {
+	for _, article := range m.Article.GetAllArticle() {
+		user, err := m.User.GetUserByID(article.WriterID)
+		if err != nil {
+			fmt.Println("Loading fail: " + article.URL)
+			continue
+		}
+		generator.GenerateArticle(article.Title, article.URL, article.Text, user.Name, article.PublishDate, article.Comment)
+	}
+}
+
+func (m *Model) BuildAllPages() {
+	articles := m.Article.GetPageArticle(100, 1)
+	articlesInfo := []generator.ArticleInfo{}
+	for _, article := range articles {
+		user, err := m.User.GetUserByID(article.WriterID)
+		if err != nil {
+			continue
+		}
+		articlesInfo = append(articlesInfo, generator.ArticleInfo{
+			Title:      article.Title,
+			URL:        article.URL,
+			Date:       time.Unix(article.PublishDate/1000, 0).Format("2006-1-2"),
+			WriterName: user.Name,
+			Text:       article.Text,
+		})
+	}
+	generator.GeneratePage(1, articlesInfo)
+}
+
 // NewModel 创建新的Mongo连接
 func NewModel(c Mongo) (*Model, error) {
 	model := new(Model)
 	err := model.initMongo(c)
+	model.buildAllArticles()
+	model.BuildAllPages()
 	return model, err
 }

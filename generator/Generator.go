@@ -3,6 +3,7 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -15,6 +16,10 @@ var t *template.Template
 type pageIndexParams struct {
 	Tmpl  string
 	Title string
+}
+
+func G(wr io.Writer, name string, data interface{}) error {
+	return t.ExecuteTemplate(wr, name, data)
 }
 
 func Generate(theme string) {
@@ -53,8 +58,8 @@ func Generate(theme string) {
 			fmt.Println(err.Error())
 			continue
 		}
-		f.Close()
 		fmt.Println("Execute: " + f.Name())
+		f.Close()
 	}
 }
 

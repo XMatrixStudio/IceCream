@@ -30,13 +30,13 @@
         <li class="nolog nav-item">
           <a class="nav-link" href="https://oauth.xmatrix.studio/register" target="_black">注册</a>
         </li>
-        <li hidden class="logged nav-item">
+        <li class="logged nav-item">
           <a class="nav-link" href="https://blog.zhenly.cn" style="margin-top:4px; font-size:16px;">
             <i class="fas fa-bell"></i>
           </a>
         </li>
-        <li hidden class="logged nav-item">
-          <a class="nav-link" href="https://blog.zhenly.cn" style="margin-top:4px; font-size:16px;">
+        <li id="articleCreate" class="logged nav-item">
+          <a class="nav-link" href="/editor" style="margin-top:4px; font-size:16px;">
             <i class="fas fa-plus"></i>
           </a>
         </li>
@@ -68,10 +68,14 @@
   function navigationInit() {
     let user = Cookies.get('user')
     let avatar = Cookies.get('avatar')
+    let level = Cookies.get('level')
     if (user) {
       $('#user').html(user)
       $('#avatar').attr('src', avatar)
       $('.logged').show()
+      if (level === "0" || level === "-1") {
+        $('#articleCreate').hide()
+      }
     } else {
       $('.nolog').show()
     }
@@ -85,6 +89,7 @@
   async function logout() {
     Cookies.remove('user')
     Cookies.remove('avatar')
+    Cookies.remove('level')
     await axios.delete('/api/users/login')
     window.location.reload()
   }

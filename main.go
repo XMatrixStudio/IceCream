@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -15,7 +16,7 @@ func main() {
 	toGenerate := flag.Bool("g", false, "generate dist")
 	flag.Parse()
 	if *toGenerate {
-		generator.Generate("default")
+		fmt.Println("This parameter is not supported for this version.")
 		return
 	}
 	generator.Generate("default")

@@ -1,0 +1,23 @@
+{{ define "articleCard" }}
+<div class="container">
+  <div style="margin:50px 0 30px 0;" class="text-center article-head">
+    <h2>
+      <a style="color:black;" href="/{{ .URL }}">{{ .Title }}</a>
+    </h2>
+    <div>
+      <small class="font-weight-light">
+        <i class="far fa-calendar-alt"></i>
+        <span>发表于</span>
+        <span>{{ .Date }}</span>
+        <span>|</span>
+        <i class="fas fa-pen-nib"></i>
+        <span>作者</span>
+        <span>{{ .WriterName }}</span>
+      </small>
+    </div>
+  </div>
+  <div style="margin:0 50px 30px 50px;">
+    {{ .Text }}
+  </div>
+</div>
+{{ end }}

@@ -1,0 +1,16 @@
+{{ define "page" }}
+<div class="container">
+  {{ range $k, $v := .Articles }}
+  <div>
+    {{ template "articleCard" $v }}
+  </div>
+  {{ end }}
+</div>
+
+<style>
+  .article-head i {
+    color: gray;
+  }
+
+</style>
+{{ end }}
