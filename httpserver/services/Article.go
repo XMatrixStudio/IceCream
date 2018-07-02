@@ -12,6 +12,8 @@ type ArticleService interface {
 	GetArticleByURL(userID, url string) (article models.Article, err error)
 	AddArticle(userID, name, url, text string, isComment bool) (err error)
 	UpdateArticle(userID, name, oldurl, url, text string, isComment bool) (err error)
+	GetLikeInfo(userID, url string) (likeNum int64, isLike bool, err error)
+	LikeArticle(userID, url string, isLike bool) (err error)
 }
 
 type articleService struct {
@@ -87,5 +89,44 @@ func (s *articleService) UpdateArticle(userID, title, oldurl, url, text string, 
 		return
 	}
 	generator.GenerateArticle(website.Name, website.URL, title, url, text, user.Name, time.Now().Unix()*1000, isComment)
+	return
+}
+
+func (s *articleService) GetLikeInfo(userID, url string) (likeNum int64, isLike bool, err error) {
+	article := s.Model.GetArticleByURL(url)
+	if article == nil {
+		return 0, false, errors.New("invalid_article")
+	}
+	if userID != "" {
+		user, err := s.Service.Model.User.GetUserByID(userID)
+		if err != nil {
+			return 0, false, err
+		}
+		isLike, err = s.Service.Model.Like.IsLike(user.ID, article.ID)
+		if err != nil {
+			return 0, false, err
+		}
+		return article.ReadNum, isLike, err
+	}
+	return article.ReadNum, false, err
+}
+
+func (s *articleService) LikeArticle(userID, url string, isLike bool) (err error) {
+	user, err := s.Service.Model.User.GetUserByID(userID)
+	if err != nil {
+		return
+	}
+	if user.Level == -1 {
+		return errors.New("black_list_user")
+	}
+	article := s.Model.GetArticleByURL(url)
+	if article == nil {
+		return errors.New("invalid_article")
+	}
+	if isLike {
+		err = s.Model.AddNum(article.ID.Hex(), "likeNum", 1)
+	} else {
+		err = s.Model.AddNum(article.ID.Hex(), "likeNum", -1)
+	}
 	return
 }

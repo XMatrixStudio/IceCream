@@ -114,11 +114,65 @@ type ArticleLikeRes struct {
 	ArticleLike ArticleLikeInfo `json:"articleLike"`
 }
 type ArticleLikeInfo struct {
-	Num  int  `json:"num"`
-	Like bool `json:"like"`
+	Num  int64 `json:"num"`
+	Like bool  `json:"like"`
 }
 
 func (c *ArticlesController) GetLike() (res ArticleLikeRes) {
-	//url := c.Ctx.FormValue("url")
+	url := c.Ctx.FormValue("url")
+	userID := c.Session.GetString("userID")
+	likeNum, isLike, err := c.Service.GetLikeInfo(userID, url)
+	if err != nil {
+		res.State = "error"
+		res.Msg = err.Error()
+		return
+	}
+	res.State = "success"
+	res.ArticleLike = ArticleLikeInfo{
+		Num:  likeNum,
+		Like: isLike,
+	}
+	return
+}
+
+type ArticleLikeReq struct {
+	URL string `json:"url"`
+}
+
+func (c *ArticlesController) PostLike() (res ArticleLikeRes) {
+	req := ArticleLikeReq{}
+	c.Ctx.ReadJSON(&req)
+	userID := c.Session.GetString("userID")
+	if userID == "" {
+		res.State = "error"
+		res.Msg = "not_login"
+		return
+	}
+	err := c.Service.LikeArticle(userID, req.URL, true)
+	if err != nil {
+		res.State = "error"
+		res.Msg = err.Error()
+		return
+	}
+	res.State = "success"
+	return
+}
+
+func (c *ArticlesController) DeleteLike() (res ArticleLikeRes) {
+	req := ArticleLikeReq{}
+	c.Ctx.ReadJSON(&req)
+	userID := c.Session.GetString("userID")
+	if userID == "" {
+		res.State = "error"
+		res.Msg = "not_login"
+		return
+	}
+	err := c.Service.LikeArticle(userID, req.URL, false)
+	if err != nil {
+		res.State = "error"
+		res.Msg = err.Error()
+		return
+	}
+	res.State = "success"
 	return
 }

@@ -20,8 +20,9 @@
         </div>
         <div id="articleLike" onclick="like()" style="display:inline-block;">
           <span>|</span>
-          <i class="far fa-heart"></i>
-          <span>0人点赞</span>
+          <i id="articleLikeIcon" class="far fa-heart"></i>
+          <span>
+            <span id="articleLikeNum"></span>人点赞</span>
         </div>
       </small>
     </div>
@@ -43,15 +44,71 @@
     if ($('#writer').html() === Cookies.get('user')) {
       $('#articleEdit').css('display', 'inline-block')
     }
-    let res = axios.get('/api/articles/like')
+    let res = await axios.get('/api/articles/like', {
+      params: {
+        url: "{{ .URL }}"
+      }
+    })
     let data = res.data
+    console.log(data)
     if (data === null) {
-
+      dialog({
+        title: '服务器错误',
+        description: '请稍后重试'
+      })
+    } else if (data.state === 'error') {
+      dialog({
+        title: '请求错误',
+        description: data.msg
+      })
+    } else {
+      $('#articleLikeNum').html(data.articleLike.num)
+      if (data.articleLike.like) {
+        $('#articleLikeIcon').removeClass('far').addClass('fas')
+      }
     }
   }
 
   async function like() {
-    await axios.post('/api/articles/like')
+    if ($('#articleLikeIcon').hasClass('far')) {
+      let res = await axios.post('/api/articles/like', {
+        url: "{{ .URL }}"
+      })
+      let data = res.data
+      if (data === null) {
+        dialog({
+          title: '服务器错误',
+          description: '请稍后重试'
+        })
+      } else if (data.state === 'error') {
+        dialog({
+          title: '请求错误',
+          description: data.msg
+        })
+      } else {
+        $('#articleLikeNum').html(parseInt($('#articleLikeNum').html()) + 1)
+        $('#articleLikeIcon').removeClass('far').addClass('fas')
+      }
+    } else {
+      let res = await axios.delete('/api/articles/like', {
+        url: "{{ .URL }}"
+      })
+      let data = res.data
+      if (data === null) {
+        dialog({
+          title: '服务器错误',
+          description: '请稍后重试'
+        })
+      } else if (data.state === 'error') {
+        dialog({
+          title: '请求错误',
+          description: data.msg
+        })
+      } else {
+        $('#articleLikeNum').html(parseInt($('#articleLikeNum').html()) - 1)
+        $('#articleLikeIcon').removeClass('fas').addClass('far')
+      }
+    }
   }
 </script>
 
