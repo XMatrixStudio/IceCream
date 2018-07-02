@@ -14,15 +14,17 @@ import (
 var t *template.Template
 
 type pageIndexParams struct {
-	Tmpl  string
-	Title string
+	Tmpl        string
+	WebsiteName string
+	WebsiteURL  string
+	HeadTitle   string
 }
 
 func G(wr io.Writer, name string, data interface{}) error {
 	return t.ExecuteTemplate(wr, name, data)
 }
 
-func Generate(theme string) {
+func Generate(theme, websiteName, websiteURL string) {
 	t = template.New("index")
 	filepath.Walk("themes/default/layouts", walkingLayouts)
 	pages, err := walkingPages("themes/default/pages", "")
@@ -32,7 +34,9 @@ func Generate(theme string) {
 	}
 	for tPath, tName := range pages {
 		tmpl := new(bytes.Buffer)
-		err := t.ExecuteTemplate(tmpl, tName, nil)
+		err := t.ExecuteTemplate(tmpl, tName, pageIndexParams{
+			WebsiteURL: websiteURL,
+		})
 		if err != nil {
 			fmt.Println("Execute template fail: " + tPath)
 			continue
@@ -49,9 +53,16 @@ func Generate(theme string) {
 			fmt.Println("Create file fail: " + tName)
 			continue
 		}
+		var headTitle string
+		switch tName {
+		case "editor":
+			headTitle = websiteName + " | 编辑文章"
+		}
 		err = t.ExecuteTemplate(f, "index", pageIndexParams{
-			Tmpl:  tmpl.String(),
-			Title: "XMatrix",
+			Tmpl:        tmpl.String(),
+			WebsiteName: websiteName,
+			WebsiteURL:  websiteURL,
+			HeadTitle:   headTitle,
 		})
 		if err != nil {
 			fmt.Println("Execute fail: " + tName)

@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/XMatrixStudio/IceCream/generator"
 	"github.com/XMatrixStudio/IceCream/httpserver"
 	"gopkg.in/yaml.v2"
 )
@@ -19,7 +18,7 @@ func main() {
 		fmt.Println("This parameter is not supported for this version.")
 		return
 	}
-	generator.Generate("default")
+
 	data, err := ioutil.ReadFile(*configFile)
 	if err != nil {
 		log.Printf("Can't find the config file in %v", *configFile)

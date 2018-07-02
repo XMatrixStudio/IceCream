@@ -45,7 +45,14 @@ func (s *articleService) AddArticle(userID, title, url, text string, isComment b
 		return
 	}
 	err = s.Service.Model.Log.AddLogRecord(userID, "创建文章"+objectID.Hex())
-	generator.GenerateArticle(title, url, text, user.Name, time.Now().Unix()*1000, isComment)
+	if err != nil {
+		return
+	}
+	website, err := s.Service.Model.Website.GetWebsiteInfo()
+	if err != nil {
+		return
+	}
+	generator.GenerateArticle(website.Name, website.URL, title, url, text, user.Name, time.Now().Unix()*1000, isComment)
 	s.Service.Model.BuildAllPages()
 	return
 }
@@ -72,6 +79,13 @@ func (s *articleService) UpdateArticle(userID, title, oldurl, url, text string, 
 		return
 	}
 	err = s.Service.Model.Log.AddLogRecord(userID, "修改文章"+article.ID.Hex())
-	generator.GenerateArticle(title, url, text, user.Name, time.Now().Unix()*1000, isComment)
+	if err != nil {
+		return
+	}
+	website, err := s.Service.Model.Website.GetWebsiteInfo()
+	if err != nil {
+		return
+	}
+	generator.GenerateArticle(website.Name, website.URL, title, url, text, user.Name, time.Now().Unix()*1000, isComment)
 	return
 }

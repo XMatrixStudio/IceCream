@@ -107,3 +107,18 @@ func (c *ArticlesController) Put() (res ArticleRes) {
 	res.State = "success"
 	return
 }
+
+type ArticleLikeRes struct {
+	State       string          `json:"state"`
+	Msg         string          `json:"msg"`
+	ArticleLike ArticleLikeInfo `json:"articleLike"`
+}
+type ArticleLikeInfo struct {
+	Num  int  `json:"num"`
+	Like bool `json:"like"`
+}
+
+func (c *ArticlesController) GetLike() (res ArticleLikeRes) {
+	//url := c.Ctx.FormValue("url")
+	return
+}

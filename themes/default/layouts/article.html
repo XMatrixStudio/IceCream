@@ -18,6 +18,11 @@
             <u>编辑</u>
           </a>
         </div>
+        <div id="articleLike" onclick="like()" style="display:inline-block;">
+          <span>|</span>
+          <i class="far fa-heart"></i>
+          <span>0人点赞</span>
+        </div>
       </small>
     </div>
   </div>
@@ -34,10 +39,19 @@
     articleInit()
   }
 
-  function articleInit() {
+  async function articleInit() {
     if ($('#writer').html() === Cookies.get('user')) {
       $('#articleEdit').css('display', 'inline-block')
     }
+    let res = axios.get('/api/articles/like')
+    let data = res.data
+    if (data === null) {
+
+    }
+  }
+
+  async function like() {
+    await axios.post('/api/articles/like')
   }
 </script>
 

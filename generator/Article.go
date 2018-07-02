@@ -18,7 +18,7 @@ type articleInfo struct {
 	Comment    bool
 }
 
-func GenerateArticle(title, url, text, writerName string, date int64, isComment bool) {
+func GenerateArticle(websiteName, websiteURL, title, url, text, writerName string, date int64, isComment bool) {
 	path := "dist/" + url
 	if _, err := os.Stat(path); err != nil {
 		err := os.MkdirAll(path, 0777)
@@ -46,8 +46,10 @@ func GenerateArticle(title, url, text, writerName string, date int64, isComment 
 		return
 	}
 	err = G(f, "index", pageIndexParams{
-		Tmpl:  tmpl.String(),
-		Title: "XMatrix",
+		Tmpl:        tmpl.String(),
+		WebsiteName: websiteName,
+		WebsiteURL:  websiteURL,
+		HeadTitle:   title,
 	})
 	if err != nil {
 		fmt.Println("Execute fail: " + path + "index.html")

@@ -20,7 +20,7 @@ type ArticleInfo struct {
 	Text       string
 }
 
-func GeneratePage(pageNum int, articles []ArticleInfo) {
+func GeneratePage(websiteName, websiteURL string, pageNum int, articles []ArticleInfo) {
 	var path string
 	if pageNum == 1 {
 		path = "dist/"
@@ -50,8 +50,10 @@ func GeneratePage(pageNum int, articles []ArticleInfo) {
 		return
 	}
 	err = G(f, "index", pageIndexParams{
-		Tmpl:  tmpl.String(),
-		Title: "XMatrix",
+		Tmpl:        tmpl.String(),
+		WebsiteName: websiteName,
+		WebsiteURL:  websiteURL,
+		HeadTitle:   websiteName,
 	})
 	if err != nil {
 		fmt.Println("Execute fail: " + path + "index.html")
