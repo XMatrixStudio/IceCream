@@ -58,3 +58,7 @@ func GenerateArticle(websiteName, websiteURL, title, url, text, writerName strin
 	fmt.Println("Execute: " + f.Name())
 	f.Close()
 }
+
+func RemoveArticle(url string) {
+	os.Remove("dist/" + url + "index.html")
+}

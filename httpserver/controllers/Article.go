@@ -108,6 +108,23 @@ func (c *ArticlesController) Put() (res ArticleRes) {
 	return
 }
 
+func (c *ArticlesController) Delete() (res ArticleRes) {
+	url := c.Ctx.FormValue("url")
+	userID := c.Session.GetString("userID")
+	if userID == "" {
+		res.State = "error"
+		res.Msg = "not_login"
+		return
+	}
+	err := c.Service.RemoveArticle(userID, url)
+	if err != nil {
+		res.State = "error"
+		res.Msg = err.Error()
+	}
+	res.State = "success"
+	return
+}
+
 type ArticleLikeRes struct {
 	State       string          `json:"state"`
 	Msg         string          `json:"msg"`
@@ -159,15 +176,14 @@ func (c *ArticlesController) PostLike() (res ArticleLikeRes) {
 }
 
 func (c *ArticlesController) DeleteLike() (res ArticleLikeRes) {
-	req := ArticleLikeReq{}
-	c.Ctx.ReadJSON(&req)
+	url := c.Ctx.FormValue("url")
 	userID := c.Session.GetString("userID")
 	if userID == "" {
 		res.State = "error"
 		res.Msg = "not_login"
 		return
 	}
-	err := c.Service.LikeArticle(userID, req.URL, false)
+	err := c.Service.LikeArticle(userID, url, false)
 	if err != nil {
 		res.State = "error"
 		res.Msg = err.Error()

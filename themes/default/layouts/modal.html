@@ -11,7 +11,7 @@
       <div id="modalBody" class="modal-body"></div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-        <button id="modalPrimaryBtn" type="button" class="btn btn-primary"></button>
+        <button id="modalPrimaryBtn" type="button" class="btn btn-danger"></button>
       </div>
     </div>
   </div>
@@ -21,9 +21,10 @@
   function dialog(data) {
     $('#modalTitle').html(data.title)
     $('#modalBody').html(data.description)
-    if (data.primary) {
-      $('#modalPrimaryBtn').hide()
-      // TODO
+    if (data.danger) {
+      $('#modalPrimaryBtn').show()
+      $('#modalPrimaryBtn').html(data.danger)
+      $('#modalPrimaryBtn').click(data.dangerOnClick)
     } else {
       $('#modalPrimaryBtn').hide()
     }

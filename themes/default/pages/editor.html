@@ -1,6 +1,11 @@
 {{ define "editor" }}
 <div class="container">
-  <div class="form-group">
+  <div class="form-group" style="margin-top:20px;">
+    <div class="row">
+      <div class="col">
+        <h2 id="editorTitle"></h2>
+      </div>
+    </div>
     <div class="row">
       <div class="col">
         <label class="col-form-label" for="inputDefault">标题</label>
@@ -46,16 +51,18 @@
   }
 
   async function editorInit() {
-    if (!Cookies.get('user')) {
+    let level = Cookies.get('level')
+    if (!level || level === '-1' || level === '0') {
       $('#title').attr('disabled', '')
       $('#url').attr('disabled', '')
       $('#text').attr('disabled', '')
       $('#comment').attr('disabled', '')
       $('#btn').attr('disabled', '')
-      dialog({
-        title: '没有权限',
-        description: '请先登录'
-      })
+      if (!level) {
+        dialog({ title: '缺少权限', description: '登录认证失效，请重新登录' })
+      } else {
+        dialog({ title: '缺少权限', description: '你所在的用户组没有创建文章的权限' })
+      }
     }
     let query = window.location.search
     let params = {}
@@ -66,63 +73,92 @@
         if (i.length !== 2) continue
         params[i[0]] = i[1]
       }
-      if (params.url) {
-        let res = await axios.get('/api/articles', {
-          params: {
-            url: params.url
-          }
-        })
-        let data = res.data
-        if (data === null) {
-          dialog({
-            title: '服务器错误',
-            description: '请稍后重试'
-          })
-        } else if (data.state === 'error') {
-          dialog({
-            title: '请求错误',
-            description: data.msg
-          })
-        } else {
-          window.oldurl = data.article.url
-          $('#title').val(data.article.title)
-          $('#url').val(data.article.url)
-          $('#comment').attr('checked', data.article.comment)
-          $('#text').val(data.article.text)
+    }
+    if (params.url) {
+      $('#editorTitle').html('编辑已有文章')
+      let res = await axios.get('/api/articles', {
+        params: {
+          url: params.url
         }
+      })
+      let data = res.data
+      if (data === null) {
+        dialog({ title: '服务器错误', description: '请稍后重试' })
+      } else if (data.state === 'error') {
+        let description
+        switch (data.msg) {
+          case 'not_login':
+            logout(true)
+            description = '登录认证失效，请重新登录'
+            break
+          case 'invalid_user':
+            description = '您不是该文章的作者或管理员'
+            break
+          default:
+            description = data.msg
+            break
+        }
+        dialog({ title: '请求错误', description: description })
+      } else {
+        window.oldurl = data.article.url
+        $('#title').val(data.article.title)
+        $('#url').val(data.article.url)
+        $('#comment').attr('checked', data.article.comment)
+        $('#text').val(data.article.text)
       }
+    } else {
+      $('#editorTitle').html('创建新的文章')
     }
   }
 
   async function submit() {
+    let req = {
+      title: $('#title').val(),
+      oldurl: window.oldurl,
+      url: $('#url').val(),
+      comment: $('#comment').is(':checked'),
+      text: $('#text').val()
+    }
+    if (!req.title || !req.text || !req.url) {
+      dialog({ title: '请求错误', description: '标题、内容、URL不能为空' })
+      return
+    } else if (!/^([A-Za-z0-9_-]+\/{0,1})+$/.test(req.url)) {
+      dialog({ title: '请求错误', description: 'URL格式非法，只能包含字母、数字、下划线、减号' })
+      return
+    }
     let res
-    if (window.oldurl) {
-      res = await axios.put('/api/articles', {
-        title: $('#title').val(),
-        oldurl: window.oldurl,
-        url: $('#url').val(),
-        comment: $('#comment').is(':checked'),
-        text: $('#text').val()
-      })
+    if (req.oldurl) {
+      res = await axios.put('/api/articles', req)
     } else {
-      res = await axios.post('/api/articles', {
-        title: $('#title').val(),
-        url: $('#url').val(),
-        comment: $('#comment').is(':checked'),
-        text: $('#text').val()
-      })
+      res = await axios.post('/api/articles', req)
     }
     let data = res.data
     if (data === null) {
-      dialog({
-        title: '服务器错误',
-        description: '请稍后重试'
-      })
+      dialog({ title: '服务器错误', description: '请稍后重试' })
     } else if (data.state === 'error') {
-      dialog({
-        title: '请求错误',
-        description: data.msg
-      })
+      let description
+      switch (data.msg) {
+        case 'not_login':
+          logout(true)
+          description = '登录认证失效，请重新登录'
+          break
+        case 'invalid_user':
+          description = '你不是该文章的作者或管理员'
+          break
+        case 'invalid_params':
+          description = '文章参数非法，请检查url是否非法或标题内容是否为空'
+          break
+        case 'invalid_level':
+          description = '权限非法，你没有创建或修改文章的权限'
+          break
+        case 'duplicate_url':
+          description = '文章URL重复，请修改URL'
+          break
+        default:
+          description = data.msg
+          break
+      }
+      dialog({ title: '请求错误', description: description })
     } else {
       window.location.href = '/' + $('#url').val()
     }

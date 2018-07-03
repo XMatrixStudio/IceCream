@@ -115,6 +115,10 @@ func (m *Model) BuildAllPages() {
 	generator.GeneratePage(website.Name, website.URL, 1, articlesInfo)
 }
 
+func (m *Model) RemoveArticle(url string) {
+	generator.RemoveArticle(url)
+}
+
 // NewModel 创建新的Mongo连接
 func NewModel(c Mongo) (*Model, error) {
 	model := new(Model)

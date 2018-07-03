@@ -9,7 +9,7 @@
     <div class="collapse navbar-collapse" id="navbarItems">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="#">首页
+          <a class="nav-link" href="/">首页
             <span class="sr-only">(current)</span>
           </a>
         </li>
@@ -86,12 +86,15 @@
     window.location.href = url
   }
 
-  async function logout() {
+  async function logout(isNotRequest) {
     Cookies.remove('user')
     Cookies.remove('avatar')
     Cookies.remove('level')
-    await axios.delete('/api/users/login')
-    window.location.reload()
+    if (!isNotRequest) {
+      await axios.delete('/api/users/login')
+    }
+    $('.nolog').show()
+    $('.logged').hide()
   }
 </script>
 
@@ -100,5 +103,6 @@
   .logged {
     display: none;
   }
+
 </style>
 {{ end }}
