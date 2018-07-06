@@ -112,7 +112,15 @@ func (m *Model) BuildAllPages() {
 	if err != nil {
 		return
 	}
-	generator.GeneratePage(website.Name, website.URL, 1, articlesInfo)
+	for i := 1; (i-1)*10 <= website.Articles; i++ {
+		if i*10 <= website.Articles {
+			generator.GeneratePage(website.Name, website.URL, website.Articles, i, articlesInfo[(i-1)*10:i*10-1])
+			generator.GenerateArchive(website.Name, website.URL, website.Articles, i, articlesInfo[(i-1)*10:i*10-1])
+		} else {
+			generator.GeneratePage(website.Name, website.URL, website.Articles, i, articlesInfo[(i-1)*10:])
+			generator.GenerateArchive(website.Name, website.URL, website.Articles, i, articlesInfo[(i-1)*10:])
+		}
+	}
 }
 
 func (m *Model) RemoveArticle(url string) {

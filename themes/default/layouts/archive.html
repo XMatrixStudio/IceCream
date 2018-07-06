@@ -1,10 +1,15 @@
-{{ define "page" }}
+{{ define "archive" }}
 <div class="container">
-  {{ range $k, $v := .Articles }}
-  <div>
-    {{ template "articleCard" $v }}
+  <div style="margin-left:10%; margin-top:50px;">
+    {{ range $k, $v := .Articles }}
+    <div class="archive-list-item">
+      <span>
+        <small>{{ $v.Date }}</small>
+      </span>
+      <div onclick="archiveOnClick('/{{ $v.URL }}')">{{ $v.Title }}</div>
+    </div>
+    {{ end }}
   </div>
-  {{ end }}
   <div style="margin-top:50px;">
     <ul class="pagination justify-content-center">
       {{ if eq .PageNum 1 }}
@@ -14,9 +19,9 @@
       {{ else }}
       <li class="page-item">
         {{ if eq .PageNum 2 }}
-        <a class="page-link" href="/">上一页</a>
+        <a class="page-link" href="/archives">上一页</a>
         {{ else }}
-        <a class="page-link" href="/page/{{ sub .PageNum 1 }}">上一页</a>
+        <a class="page-link" href="/archives/page/{{ sub .PageNum 1 }}">上一页</a>
         {{ end }}
       </li>
       {{ end }} {{ if ge .PageNum 3 }}
@@ -24,9 +29,9 @@
       {{ end }} {{ if and (ge .P1 1) (le .P1 .Page) }}
       <li class="page-item {{ if eq .P1 .PageNum }} active {{ end }}">
         {{ if eq .P1 1 }}
-        <a class="page-link" href="/">1</a>
+        <a class="page-link" href="/archives">1</a>
         {{ else }}
-        <a class="page-link" href="/page/{{ .P1 }}">
+        <a class="page-link" href="/archives/page/{{ .P1 }}">
           {{ .P1 }} {{ if eq .P1 .PageNum }}
           <span class="sr-only">(current)</span>
           {{ end }}
@@ -36,9 +41,9 @@
       {{ end }} {{ if le .P2 .Page }}
       <li class="page-item {{ if eq .P2 .PageNum }} active {{ end }}">
         {{ if eq .P2 1 }}
-        <a class="page-link" href="/">1</a>
+        <a class="page-link" href="/archives">1</a>
         {{ else }}
-        <a class="page-link" href="/page/{{ .P2 }}">
+        <a class="page-link" href="/archives/page/{{ .P2 }}">
           {{ .P2 }} {{ if eq .P2 .PageNum }}
           <span class="sr-only">(current)</span>
           {{ end }}</a>
@@ -63,17 +68,32 @@
       </li>
       {{ else }}
       <li class="page-item">
-        <a class="page-link" href="/page/{{ add .PageNum 1 }}">下一页</a>
+        <a class="page-link" href="/archives/page/{{ add .PageNum 1 }}">下一页</a>
       </li>
       {{ end }}
     </ul>
   </div>
 </div>
 
+<script>
+  function archiveOnClick(url) {
+    window.location.href = url
+  }
+</script>
+
 <style>
-  .article-head i {
-    color: gray;
+  .archive-list-item div {
+    border-left: 2px solid rgb(210, 210, 210);
+    display: inline-block;
+    margin: 10px 20px;
+    padding: 10px 20px;
+  }
+
+  .archive-list-item div:hover {
+    border-left: 2px solid gray;
+    cursor: pointer;
   }
 
 </style>
+
 {{ end }}

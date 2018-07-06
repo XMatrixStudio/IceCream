@@ -26,6 +26,10 @@ func G(wr io.Writer, name string, data interface{}) error {
 
 func Generate(theme, websiteName, websiteURL string) {
 	t = template.New("index")
+	t = t.Funcs(template.FuncMap{
+		"add": func(lhs, rhs int) int { return lhs + rhs },
+		"sub": func(lhs, rhs int) int { return lhs - rhs },
+	})
 	filepath.Walk("themes/default/layouts", walkingLayouts)
 	pages, err := walkingPages("themes/default/pages", "")
 	if err != nil {

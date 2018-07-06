@@ -7,29 +7,12 @@ import (
 	"strconv"
 )
 
-type pageInfo struct {
-	PageNum  int
-	Page     int
-	P1       int
-	P2       int
-	P3       int
-	Articles []ArticleInfo
-}
-
-type ArticleInfo struct {
-	Title      string
-	URL        string
-	Date       string
-	WriterName string
-	Text       string
-}
-
-func GeneratePage(websiteName, websiteURL string, websiteArticles, pageNum int, articles []ArticleInfo) {
+func GenerateArchive(websiteName, websiteURL string, websiteArticles, pageNum int, articles []ArticleInfo) {
 	var path string
 	if pageNum == 1 {
-		path = "dist/"
+		path = "dist/archives/"
 	} else if pageNum > 1 {
-		path = "dist/page/" + strconv.Itoa(pageNum) + "/"
+		path = "dist/archives/page/" + strconv.Itoa(pageNum) + "/"
 	} else {
 		return
 	}
@@ -53,7 +36,7 @@ func GeneratePage(websiteName, websiteURL string, websiteArticles, pageNum int, 
 	} else {
 		p1, p2, p3 = pageNum-1, pageNum, pageNum+1
 	}
-	err = G(tmpl, "page", pageInfo{
+	err = G(tmpl, "archive", pageInfo{
 		PageNum:  pageNum,
 		Page:     (websiteArticles + 9) / 10,
 		P1:       p1,
