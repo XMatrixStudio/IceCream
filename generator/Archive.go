@@ -29,16 +29,20 @@ func GenerateArchive(websiteName, websiteURL string, websiteArticles, pageNum in
 	}
 	tmpl := new(bytes.Buffer)
 	var p1, p2, p3 int
+	page := (websiteArticles + 9) / 10
+	if page == 0 {
+		page = 1
+	}
 	if pageNum == 1 {
 		p1, p2, p3 = pageNum, pageNum+1, pageNum+2
-	} else if pageNum == (websiteArticles+9)/10 {
+	} else if pageNum == page {
 		p1, p2, p3 = pageNum-2, pageNum-1, pageNum
 	} else {
 		p1, p2, p3 = pageNum-1, pageNum, pageNum+1
 	}
 	err = G(tmpl, "archive", pageInfo{
 		PageNum:  pageNum,
-		Page:     (websiteArticles + 9) / 10,
+		Page:     page,
 		P1:       p1,
 		P2:       p2,
 		P3:       p3,
@@ -52,7 +56,7 @@ func GenerateArchive(websiteName, websiteURL string, websiteArticles, pageNum in
 		Tmpl:        tmpl.String(),
 		WebsiteName: websiteName,
 		WebsiteURL:  websiteURL,
-		HeadTitle:   websiteName,
+		HeadTitle:   websiteName + " | 归档",
 	})
 	if err != nil {
 		fmt.Println("Execute fail: " + path + "index.html")

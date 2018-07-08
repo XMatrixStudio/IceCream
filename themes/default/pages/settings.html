@@ -1,0 +1,81 @@
+{{ define "settings" }}
+<div class="container">
+  <div class="form-group" style="margin-top:20px; padding-bottom:50px;">
+    <h2>编辑网站信息</h2>
+    <div style="margin-top:50px;">
+      <label class="col-form-label" for="inputDefault">名字</label>
+      <input id="websiteName" type="text" class="form-control" placeholder="请输入网站的名字" value="{{ .WebsiteName }}"/>
+      <label class="col-form-label" for="inputDefault">URL</label>
+      <input id="websiteUrl" type="text" class="form-control" placeholder="请输入网站的URL" value="{{ .WebsiteURL }}" />
+      <label class="col-form-label" for="inputDefault">关于页面(Markdown语法)</label>
+      <textarea id="websiteAboutText" class="form-control" style="resize:none;" rows="20" placeholder="请输入关于页面的内容">{{ .WebsiteAboutText }}</textarea>
+      <div class="float-right" style="margin-top:10px;">
+        <button id="btn" onclick="settingsSubmit()" type="button" class="btn btn-success">提交</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const settingsPreOnload = window.onload
+  window.onload = () => {
+    if (settingsPreOnload) settingsPreOnload()
+    settingsInit()
+  }
+
+  function settingsInit() {
+    let level = Cookies.get('level')
+    if (!level || level != '99') {
+      $('#websiteName').attr('disabled', '')
+      $('#websiteUrl').attr('disabled', '')
+      if (!level) {
+        dialog({ title: '缺少权限', description: '登录认证失效，请重新登录' })
+      } else {
+        dialog({ title: '缺少权限', description: '你所在的用户组没有修改网站信息的权限' })
+      }
+    }
+  }
+
+
+  async function settingsSubmit() {
+    let name = $('#websiteName').val()
+    let url = $('#websiteUrl').val()
+    let text = $('#websiteAboutText').val()
+    if (!name || !url) {
+      dialog({ title: '请求错误', description: '标题、内容、URL不能为空' })
+      return
+    } else if (!/^http[s]{0,1}:\/\/([A-Za-z0-9_.-]+\/)+$/.test(url)) {
+      dialog({ title: '请求错误', description: 'URL格式非法，注意确保链接后已加上"/"' })
+      return
+    }
+    let res = await axios.put('/api/website', {
+      name: name,
+      url: url,
+      text: text
+    })
+    let data = res.data
+    if (data === null) {
+      dialog({ title: '服务器错误', description: '请稍后重试' })
+    } else if (data.state === 'error') {
+      let description
+      switch (data.msg) {
+        case 'not_login':
+          logout(true)
+          description = '登录认证失效，请重新登录'
+          break
+        case 'invalid_params':
+          description = '参数非法，请检查url是否非法或内容是否为空'
+          break
+        case 'invalid_level':
+          description = '权限非法，你没有修改网站信息的权限'
+          break
+        default:
+          description = data.msg
+          break
+      }
+      dialog({ title: '请求错误', description: description })
+    } else {
+      window.location.href = '/'
+    }
+  }
+</script> {{ end }}

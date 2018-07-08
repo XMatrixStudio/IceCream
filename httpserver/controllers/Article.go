@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/XMatrixStudio/IceCream/httpserver/services"
 	"github.com/kataras/iris"
@@ -52,6 +53,14 @@ func (c *ArticlesController) Get() (res ArticleRes) {
 	return
 }
 
+var reservedPath = [...]string{
+	"about",
+	"archives",
+	"editor",
+	"page",
+	"settings",
+}
+
 func (c *ArticlesController) Post() (res ArticleRes) {
 	info := ArticleInfo{}
 	c.Ctx.ReadJSON(&info)
@@ -66,6 +75,14 @@ func (c *ArticlesController) Post() (res ArticleRes) {
 		res.State = "error"
 		res.Msg = "invalid_params"
 		return
+	}
+	basePath := strings.Split(info.URL, "/")[0]
+	for _, str := range reservedPath {
+		if str == basePath {
+			res.State = "error"
+			res.Msg = "reserved_url"
+			return
+		}
 	}
 	if info.URL[len(info.URL)-1] != '/' {
 		info.URL += "/"
@@ -95,6 +112,14 @@ func (c *ArticlesController) Put() (res ArticleRes) {
 		res.Msg = "invalid_params"
 		return
 	}
+	basePath := strings.Split(info.URL, "/")[0]
+	for _, str := range reservedPath {
+		if str == basePath {
+			res.State = "error"
+			res.Msg = "reserved_url"
+			return
+		}
+	}
 	if info.URL[len(info.URL)-1] != '/' {
 		info.URL += "/"
 	}
@@ -120,6 +145,55 @@ func (c *ArticlesController) Delete() (res ArticleRes) {
 	if err != nil {
 		res.State = "error"
 		res.Msg = err.Error()
+	}
+	res.State = "success"
+	return
+}
+
+type ArticleCommentReq struct {
+	URL    string `json:"url"`
+	Text   string `json:"text"`
+	Father string `json:"father"`
+}
+
+type ArticleCommentRes struct {
+	State    string                        `json:"state"`
+	Msg      string                        `json:"msg"`
+	Comments []services.ArticleCommentInfo `json:"comments"`
+}
+
+func (c *ArticlesController) GetComments() (res ArticleCommentRes) {
+	url := c.Ctx.FormValue("url")
+	comments, err := c.Service.GetComments(url)
+	if err != nil {
+		res.State = "error"
+		res.Msg = err.Error()
+		return
+	}
+	res.State = "success"
+	res.Comments = comments
+	return
+}
+
+func (c *ArticlesController) PostComments() (res ArticleCommentRes) {
+	comment := ArticleCommentReq{}
+	c.Ctx.ReadJSON(&comment)
+	userID := c.Session.GetString("userID")
+	if userID == "" {
+		res.State = "error"
+		res.Msg = "not_login"
+		return
+	}
+	if comment.URL == "" || comment.Text == "" {
+		res.State = "error"
+		res.Msg = "invalid_params"
+		return
+	}
+	err := c.Service.AddComment(userID, comment.URL, comment.Text, comment.Father)
+	if err != nil {
+		res.State = "error"
+		res.Msg = err.Error()
+		return
 	}
 	res.State = "success"
 	return

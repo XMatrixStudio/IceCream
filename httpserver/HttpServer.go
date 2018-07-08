@@ -60,6 +60,11 @@ func RunServer(c Config) {
 	articles.Register(articleService, sessManager.Start)
 	articles.Handle(new(controllers.ArticlesController))
 
+	websiteService := Service.NewWebsiteService()
+	website := mvc.New(app.Party(c.HTTPServer.APIDir + "/website"))
+	website.Register(websiteService, sessManager.Start)
+	website.Handle(new(controllers.WebsiteController))
+
 	app.StaticWeb("/", "./dist/")
 
 	appConf := iris.Configuration{

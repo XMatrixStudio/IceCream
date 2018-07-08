@@ -28,6 +28,7 @@ type Model struct {
 	Log     LogModel
 	Website WebsiteModel
 	Like    LikeModel
+	Comment CommentModel
 }
 
 // initMongo 初始化数据库
@@ -52,11 +53,12 @@ func (m *Model) initMongo(conf Mongo) error {
 	m.Article.DB = m.DB.C("articles")
 	m.Website.DB = m.DB.C("website")
 	m.Like.DB = m.DB.C("likes")
+	m.Comment.DB = m.DB.C("comments")
 	log.Printf("MongoDB Connect Success!")
 	return nil
 }
 
-func (m *Model) initWebsite() {
+func (m *Model) InitWebsite() {
 	err := m.Website.InitWebsiteInfo("冰淇淋", "https://xmatrix.studio/")
 	if err != nil {
 		return
@@ -65,10 +67,10 @@ func (m *Model) initWebsite() {
 	if err != nil {
 		return
 	}
-	generator.Generate("default", website.Name, website.URL)
+	generator.Generate("default", website.Name, website.URL, website.Text)
 }
 
-func (m *Model) buildAllArticles() {
+func (m *Model) BuildAllArticles() {
 	website, err := m.Website.GetWebsiteInfo()
 	if err != nil {
 		return
@@ -131,8 +133,8 @@ func (m *Model) RemoveArticle(url string) {
 func NewModel(c Mongo) (*Model, error) {
 	model := new(Model)
 	err := model.initMongo(c)
-	model.initWebsite()
-	model.buildAllArticles()
+	model.InitWebsite()
+	model.BuildAllArticles()
 	model.BuildAllPages()
 	return model, err
 }

@@ -1,5 +1,112 @@
 {{ define "comment" }}
 <div class="container">
-
+  <hr style="margin:50px;" />
+  <div style="margin:0 5%;">
+    <div class="input-group">
+      <input id="commentInput" class="form-control width100" placeholder="请先登录后评论" disabled/>
+      <span class="input-group-btn" style="margin-left:10px;">
+        <button id="commentButton" class="btn btn-success" onclick="commentSubmit()" disabled>评论</button>
+      </span>
+    </div>
+    <div style="margin:20px 0">
+      <div id="commentBox" style="border:1px solid rgb(235,235,235); padding:20px;">
+      </div>
+    </div>
+  </div>
 </div>
-{{ end }}
+
+<script>
+  const commentPreOnload = window.onload
+  window.onload = () => {
+    if (commentPreOnload) commentPreOnload()
+    commentInit()
+  }
+
+  async function commentInit() {
+    let user = Cookies.get('user')
+    if (user) {
+      if ('{{ .Comment }}' === 'false') {
+        $('#commentInput').attr('placeholder', '该文章禁止评论')
+      } else {
+        $('#commentInput').attr('placeholder', '写下你的评论')
+        $('#commentInput').removeAttr('disabled')
+        $('#commentButton').removeAttr('disabled')
+      }
+    }
+    let res = await axios.get('/api/articles/comments', {
+      params: {
+        url: '{{ .URL }}'
+      }
+    })
+    let data = res.data
+    if (data === null || data.state === 'error' || data.comments.length === 0) {
+      $('#commentBox').hide()
+    } else {
+      for (let i in data.comments) {
+        if (i !== '0') {
+          $('#commentBox').append('<hr/>')
+        }
+        let date = new Date(data.comments[i].date)
+        let dateStr = (date.getYear() + 1900) + '-' + (date.getMonth() + 1) + '-' + (date.getDay() + 1)
+        dateStr = dateStr + ' ' + (date.getHours() < 10 ? '0' + date.getHours() : date.getHours())
+        dateStr = dateStr + ':' + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes())
+        dateStr = dateStr + ':' + (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds())
+        $('#commentBox').append(`
+          <div>
+            <div>
+              <img class="rounded d-block mx-auto float-left" style="display:inline-block; vertical-align:middle; height:24px;" src="${data.comments[i].avatar}"/>
+              <span style="margin-left:10px;">${data.comments[i].user}</span>
+              <span class="float-right">${dateStr}</span>
+            </div>
+            <div style="margin:10px 0">${data.comments[i].text}</div>
+          </div>
+        `)
+      }
+    }
+  }
+
+  async function commentSubmit() {
+    let comment = $('#commentInput').val()
+    if (!comment) {
+      dialog({ title: '请求错误', description: '评论不能为空' })
+      return
+    }
+    let res = await axios.post('/api/articles/comments', {
+      url: '{{ .URL }}',
+      text: comment
+    })
+    let data = res.data
+    if (data === null) {
+      dialog({ title: '服务器错误', description: '请稍后重试' })
+    } else if (data.state === 'error') {
+      let description
+      switch (data.msg) {
+        case 'not_login':
+          logout(true)
+          description = '登录认证失效，请重新登录'
+          break
+        case 'invalid_article':
+          description = '参数非法，找不到该文章'
+          break
+        case 'disabled_comment':
+          description = '权限非法，该文章禁止评论'
+          break
+        case 'invalid_params':
+          description = '参数非法，请检查评论是否为空'
+          break
+        case 'invalid_level':
+          description = '权限非法，你没有评论的权限'
+          break
+        case 'invalid_father':
+          description = '找不到你要评论的评论'
+          break
+        default:
+          description = data.msg
+          break
+      }
+      dialog({ title: '请求错误', description: description })
+    } else {
+      window.location.reload()
+    }
+  }
+</script> {{ end }}

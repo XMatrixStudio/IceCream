@@ -30,7 +30,7 @@
         <li class="nolog nav-item">
           <a class="nav-link" href="https://oauth.xmatrix.studio/register" target="_black">注册</a>
         </li>
-        <li class="logged nav-item">
+        <li id="bell" class="logged nav-item">
           <a class="nav-link" href="https://blog.zhenly.cn" style="margin-top:4px; font-size:16px;">
             <i class="fas fa-bell"></i>
           </a>
@@ -49,7 +49,7 @@
           <div class="dropdown-menu" aria-labelledby="navUser">
             <p id="user" class="dropdown-item-text font-weight-light"></p>
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item">设置</a>
+            <a id="settingsA" class="dropdown-item" href="/settings">设置</a>
             <a class="dropdown-item" onclick="logout()">注销</a>
           </div>
         </li>
@@ -76,9 +76,15 @@
       if (level === "0" || level === "-1") {
         $('#articleCreate').hide()
       }
+      if (level !== '99') {
+        $('#settingsA').hide()
+      }
     } else {
       $('.nolog').show()
     }
+
+    // TODO
+    $('#bell').hide()
   }
 
   function login() {

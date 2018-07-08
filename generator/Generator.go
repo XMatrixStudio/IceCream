@@ -9,22 +9,25 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	blackfriday "gopkg.in/russross/blackfriday.v2"
 )
 
 var t *template.Template
 
 type pageIndexParams struct {
-	Tmpl        string
-	WebsiteName string
-	WebsiteURL  string
-	HeadTitle   string
+	Tmpl             string
+	WebsiteName      string
+	WebsiteURL       string
+	WebsiteAboutText string
+	HeadTitle        string
 }
 
 func G(wr io.Writer, name string, data interface{}) error {
 	return t.ExecuteTemplate(wr, name, data)
 }
 
-func Generate(theme, websiteName, websiteURL string) {
+func Generate(theme, websiteName, websiteURL, websiteAboutText string) {
 	t = template.New("index")
 	t = t.Funcs(template.FuncMap{
 		"add": func(lhs, rhs int) int { return lhs + rhs },
@@ -39,7 +42,9 @@ func Generate(theme, websiteName, websiteURL string) {
 	for tPath, tName := range pages {
 		tmpl := new(bytes.Buffer)
 		err := t.ExecuteTemplate(tmpl, tName, pageIndexParams{
-			WebsiteURL: websiteURL,
+			WebsiteURL:       websiteURL,
+			WebsiteName:      websiteName,
+			WebsiteAboutText: websiteAboutText,
 		})
 		if err != nil {
 			fmt.Println("Execute template fail: " + tPath)
@@ -61,6 +66,8 @@ func Generate(theme, websiteName, websiteURL string) {
 		switch tName {
 		case "editor":
 			headTitle = websiteName + " | 编辑文章"
+		case "settings":
+			headTitle = websiteName + " | 编辑网站信息"
 		}
 		err = t.ExecuteTemplate(f, "index", pageIndexParams{
 			Tmpl:        tmpl.String(),
@@ -76,6 +83,7 @@ func Generate(theme, websiteName, websiteURL string) {
 		fmt.Println("Execute: " + f.Name())
 		f.Close()
 	}
+	GenerateAbout(websiteName, websiteURL, websiteAboutText)
 }
 
 func walkingLayouts(path string, f os.FileInfo, err error) error {
@@ -123,6 +131,36 @@ func walkingPages(root, dirPath string) (pages map[string]string, err error) {
 	return
 }
 
-func generateIndex(theme string) {
-
+func GenerateAbout(websiteName, websiteURL, websiteAboutText string) {
+	path := "dist/about/"
+	if _, err := os.Stat(path); err != nil {
+		err := os.MkdirAll(path, 0777)
+		if err != nil {
+			fmt.Println("Create file fail: " + path)
+		}
+	}
+	f, err := os.Create(path + "index.html")
+	if err != nil {
+		fmt.Println("Create file fail: " + path + "index.html")
+		return
+	}
+	output := blackfriday.Run([]byte(websiteAboutText))
+	tmpl := new(bytes.Buffer)
+	err = G(tmpl, "about", string(output))
+	if err != nil {
+		fmt.Println("Execute fail: " + path + "index.html")
+		return
+	}
+	err = G(f, "index", pageIndexParams{
+		Tmpl:        tmpl.String(),
+		WebsiteName: websiteName,
+		WebsiteURL:  websiteURL,
+		HeadTitle:   websiteName + " | 关于",
+	})
+	if err != nil {
+		fmt.Println("Execute fail: " + path + "index.html")
+		return
+	}
+	fmt.Println("Execute: " + f.Name())
+	f.Close()
 }

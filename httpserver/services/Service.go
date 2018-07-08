@@ -30,3 +30,10 @@ func (s *Service) NewArticleService() ArticleService {
 		Service: s,
 	}
 }
+
+func (s *Service) NewWebsiteService() WebsiteService {
+	return &websiteService{
+		Model:   s.Model.Website,
+		Service: s,
+	}
+}

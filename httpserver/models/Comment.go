@@ -18,18 +18,18 @@ type Comment struct {
 	UserID    bson.ObjectId `bson:"userId"`    // 评论用户ID 【索引】
 	Date      int64         `bson:"date"`      // 发布时间
 	Content   string        `bson:"content"`   // 评论内容
-	FatherID  bson.ObjectId `bson:"fatherId"`  // 父评论ID
+	Father    string        `bson:"father"`    // 父评论ID
 	LikeNum   int64         `bson:"likeNum"`   // 点赞数
 	Top       bool          `bson:"top"`       // 是否置顶
 }
 
-func (m *CommentModel) AddComment(articeID, userID, fatherID bson.ObjectId, content string) (err error) {
+func (m *CommentModel) AddComment(articeID, userID, fatherID, content string) (err error) {
 	newComment := bson.NewObjectId()
 	return m.DB.Insert(Comment{
 		ID:        newComment,
-		ArticleID: articeID,
-		UserID:    userID,
-		FatherID:  fatherID,
+		ArticleID: bson.ObjectIdHex(articeID),
+		UserID:    bson.ObjectIdHex(userID),
+		Father:    fatherID,
 		Date:      time.Now().Unix() * 1000,
 		Content:   content,
 		LikeNum:   0,
@@ -37,7 +37,12 @@ func (m *CommentModel) AddComment(articeID, userID, fatherID bson.ObjectId, cont
 	})
 }
 
-func (m *CommentModel) GetCommentByArticleID(articeID bson.ObjectId) (comments []Comment, err error) {
-	err = m.DB.Find(bson.M{"articleId": articeID}).All(&comments)
+func (m *CommentModel) GetCommentByID(commentID string) (comment *Comment, err error) {
+	err = m.DB.FindId(bson.ObjectIdHex(commentID)).One(comment)
+	return
+}
+
+func (m *CommentModel) GetCommentByArticleID(articeID string) (comments []Comment, err error) {
+	err = m.DB.Find(bson.M{"articleId": bson.ObjectIdHex(articeID)}).All(&comments)
 	return
 }

@@ -46,16 +46,20 @@ func GeneratePage(websiteName, websiteURL string, websiteArticles, pageNum int, 
 	}
 	tmpl := new(bytes.Buffer)
 	var p1, p2, p3 int
+	page := (websiteArticles + 9) / 10
+	if page == 0 {
+		page = 1
+	}
 	if pageNum == 1 {
 		p1, p2, p3 = pageNum, pageNum+1, pageNum+2
-	} else if pageNum == (websiteArticles+9)/10 {
+	} else if pageNum == page {
 		p1, p2, p3 = pageNum-2, pageNum-1, pageNum
 	} else {
 		p1, p2, p3 = pageNum-1, pageNum, pageNum+1
 	}
 	err = G(tmpl, "page", pageInfo{
 		PageNum:  pageNum,
-		Page:     (websiteArticles + 9) / 10,
+		Page:     page,
 		P1:       p1,
 		P2:       p2,
 		P3:       p3,

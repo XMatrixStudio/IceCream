@@ -23,7 +23,7 @@
     </div>
     <div class="row">
       <div class="col">
-        <label for="exampleTextarea">文章内容</label>
+        <label for="exampleTextarea">文章内容(Markdown语法)</label>
         <textarea id="text" class="form-control" style="resize:none;" rows="20" placeholder="请输入文章的内容"></textarea>
       </div>
     </div>
@@ -153,6 +153,9 @@
           break
         case 'duplicate_url':
           description = '文章URL重复，请修改URL'
+          break
+        case 'reserved_url':
+          description = '文章URL路径保留，请修改URL'
           break
         default:
           description = data.msg

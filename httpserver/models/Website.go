@@ -13,6 +13,7 @@ type Website struct {
 	ID       bson.ObjectId `bson:"_id"`
 	Name     string        `bson:"name"`
 	URL      string        `bson:"url"`
+	Text     string        `bson:"text"`
 	Articles int           `bson:"articles"`
 }
 
@@ -39,11 +40,12 @@ func (m *WebsiteModel) IncOrDecArticlesNum(num int) error {
 	return m.DB.Update(nil, bson.M{"$inc": bson.M{"articles": num}})
 }
 
-func (m *WebsiteModel) EditWebsiteInfo(name, url string) error {
+func (m *WebsiteModel) EditWebsiteInfo(name, url, text string) error {
 	return m.DB.Update(nil, bson.M{
 		"$set": bson.M{
 			"name": name,
 			"url":  url,
+			"text": text,
 		},
 	})
 }
