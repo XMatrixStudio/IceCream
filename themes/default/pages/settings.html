@@ -2,7 +2,7 @@
 <div class="container">
   <div class="form-group" style="margin-top:20px; padding-bottom:50px;">
     <h2>编辑网站信息</h2>
-    <div style="margin-top:50px;">
+    <div style="margin-top:20px;">
       <label class="col-form-label" for="inputDefault">名字</label>
       <input id="websiteName" type="text" class="form-control" placeholder="请输入网站的名字" value="{{ .WebsiteName }}"/>
       <label class="col-form-label" for="inputDefault">URL</label>
@@ -28,6 +28,7 @@
     if (!level || level != '99') {
       $('#websiteName').attr('disabled', '')
       $('#websiteUrl').attr('disabled', '')
+      $('#websiteAboutText').attr('disabled', '')
       if (!level) {
         dialog({ title: '缺少权限', description: '登录认证失效，请重新登录' })
       } else {

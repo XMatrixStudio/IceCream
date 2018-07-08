@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/XMatrixStudio/IceCream/generator"
@@ -93,14 +92,21 @@ func (m *Model) BuildAllPages() {
 		if err != nil {
 			continue
 		}
-		index := strings.Index(article.Text, "#")
+		arrRune := []rune(article.Text)
+		index := -1
+		for i, r := range arrRune {
+			if r == '#' {
+				index = i
+				break
+			}
+		}
 		var text string
-		if index != -1 && index <= 200 {
-			text = article.Text[:index]
-		} else if (index == -1 && len(article.Text) > 200) || index > 200 {
-			text = article.Text[:200]
+		if index != -1 && index <= 100 {
+			text = string(arrRune[:index])
+		} else if (index == -1 && len(arrRune) > 100) || index > 100 {
+			text = string(arrRune[:100])
 		} else {
-			text = article.Text
+			text = string(arrRune)
 		}
 		articlesInfo = append(articlesInfo, generator.ArticleInfo{
 			Title:      article.Title,

@@ -96,6 +96,7 @@ func (s *articleService) UpdateArticle(userID, title, oldurl, url, text string, 
 		return
 	}
 	generator.GenerateArticle(website.Name, website.URL, title, url, text, user.Name, time.Now().Unix()*1000, isComment)
+	s.Service.Model.BuildAllPages()
 	return
 }
 

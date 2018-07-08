@@ -11,16 +11,18 @@ type LogModel struct {
 	DB *mgo.Collection
 }
 
+// Log 记录
 type Log struct {
-	ID     bson.ObjectId `bson:"_id"`
-	UserID bson.ObjectId `bson:"uid"`
-	Logs   []LogRecord   `bson:"logs"`
+	ID     bson.ObjectId `bson:"_id"`  //记录ID
+	UserID bson.ObjectId `bson:"uid"`  //用户ID
+	Logs   []LogRecord   `bson:"logs"` //记录内容数组
 }
 
+// LogRecord 记录内容
 type LogRecord struct {
-	Date  int64  `bson:"date"`
-	State bool   `bson:"state"`
-	Msg   string `bson:"msg"`
+	Date  int64  `bson:"date"`  //记录时间
+	State bool   `bson:"state"` //记录状态
+	Msg   string `bson:"msg"`   //记录内容文本
 }
 
 func (m *LogModel) AddLogDocument(userID string) (err error) {

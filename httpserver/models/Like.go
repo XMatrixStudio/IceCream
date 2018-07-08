@@ -9,10 +9,11 @@ type LikeModel struct {
 	DB *mgo.Collection
 }
 
+// Like 点赞
 type Like struct {
-	ID       bson.ObjectId   `bson:"_id"`
-	UserID   bson.ObjectId   `bson:"uid"`
-	Articles []bson.ObjectId `bson:"articles"`
+	ID       bson.ObjectId   `bson:"_id"`      // 点赞ID
+	UserID   bson.ObjectId   `bson:"uid"`      // 用户ID
+	Articles []bson.ObjectId `bson:"articles"` // 文章ID数组
 }
 
 func (m *LikeModel) AddDocument(userID string) (err error) {

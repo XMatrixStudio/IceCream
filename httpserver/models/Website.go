@@ -9,12 +9,13 @@ type WebsiteModel struct {
 	DB *mgo.Collection
 }
 
+// Website 网站信息
 type Website struct {
-	ID       bson.ObjectId `bson:"_id"`
-	Name     string        `bson:"name"`
-	URL      string        `bson:"url"`
-	Text     string        `bson:"text"`
-	Articles int           `bson:"articles"`
+	ID       bson.ObjectId `bson:"_id"`      // ID
+	Name     string        `bson:"name"`     // 网站显示名字
+	URL      string        `bson:"url"`      // 网站显示URL
+	Text     string        `bson:"text"`     // 网站关于内容
+	Articles int           `bson:"articles"` // 文章数量
 }
 
 func (m *WebsiteModel) InitWebsiteInfo(name, url string) error {

@@ -39,7 +39,7 @@
       }
     })
     let data = res.data
-    if (data === null || data.state === 'error' || data.comments.length === 0) {
+    if (data === null || data.state === 'error' || !data.comments || data.comments.length === 0) {
       $('#commentBox').hide()
     } else {
       for (let i in data.comments) {

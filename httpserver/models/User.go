@@ -10,7 +10,7 @@ type UserModel struct {
 	DB *mgo.Collection
 }
 
-// Users 用户
+// User 用户
 type User struct {
 	ID       bson.ObjectId `bson:"_id"`   // 用户ID
 	VioletID bson.ObjectId `bson:"vid"`   // VioletID

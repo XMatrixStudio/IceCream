@@ -46,7 +46,7 @@ func RunServer(c Config) {
 	}
 
 	sessManager := sessions.New(sessions.Config{
-		Cookie:  "sessionBug",
+		Cookie:  "sessionIceCream",
 		Expires: 24 * time.Hour,
 	})
 	// "/users" based mvc application.
