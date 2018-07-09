@@ -1,0 +1,200 @@
+{{ define "article" }}
+<div class="container">
+  <div style="margin:50px 0;" class="text-center article-head">
+    <h2>{{ .Title }}</h2>
+    <div>
+      <small class="font-weight-light">
+        <i class="far fa-calendar-alt"></i>
+        <span>发表于</span>
+        <span>{{ .Date }}</span>
+        <span>|</span>
+        <i class="fas fa-pen-nib"></i>
+        <span>作者</span>
+        <span id="writer">{{ .WriterName }}</span>
+        <div id="articleEdit" style="display:none;">
+          <span>|</span>
+          <i class="far fa-edit"></i>
+          <a style="color:black;" href="/editor/?url={{ .URL }}">
+            <u>编辑</u>
+          </a>
+          <span>|</span>
+          <i class="far fa-trash-alt"></i>
+          <a style="color:black; cursor:pointer;" onclick="articleDelete()">
+            <u>删除</u>
+          </a>
+        </div>
+        <div id="articleLike" onclick="articleLike()" style="display:none;">
+          <span>|</span>
+          <i id="articleLikeIcon" class="far fa-heart"></i>
+          <span id="articleLikeNum"></span>人点赞</span>
+        </div>
+      </small>
+    </div>
+  </div>
+  <div style="margin:0 50px;">
+    {{ .Text }}
+  </div>
+  {{ template "comment" . }}
+</div>
+
+<script>
+  let articlePreOnload = window.onload
+  window.onload = () => {
+    if (articlePreOnload) articlePreOnload()
+    articleInit()
+  }
+
+  async function articleInit() {
+    if ($('#writer').html() === Cookies.get('user') || Cookies.get('level') === '99') {
+      $('#articleEdit').css('display', 'inline-block')
+    }
+    let res = await axios.get('/api/articles/like', {
+      params: {
+        url: "{{ .URL }}"
+      }
+    })
+    let data = res.data
+    if (data === null) {
+      dialog({ title: '服务器错误', description: '请稍后重试' })
+    } else if (data.state === 'error') {
+      let description
+      switch (data.msg) {
+        case 'not_login':
+          logout(true)
+          description = '登录认证失效，请重新登录'
+          break
+        case 'invalid_article':
+          description = '文章不存在'
+          break
+        case 'black_list_user':
+          description = '你已被管理员加入黑名单，无法点赞或取消点赞'
+          break
+        default:
+          description = data.msg
+          break
+      }
+      dialog({ title: '请求错误', description: description })
+    } else {
+      $('#articleLike').css('display', 'inline-block')
+      $('#articleLikeNum').html(data.articleLike.num)
+      if (data.articleLike.like) {
+        $('#articleLikeIcon').removeClass('far').addClass('fas')
+      }
+    }
+  }
+
+  async function articleLike() {
+    if ($('#articleLikeIcon').hasClass('far')) {
+      let res = await axios.post('/api/articles/like', {
+        url: "{{ .URL }}"
+      })
+      let data = res.data
+      if (data === null) {
+        dialog({ title: '服务器错误', description: '请稍后重试' })
+      } else if (data.state === 'error') {
+        let description
+        switch (data.msg) {
+          case 'not_login':
+            logout(true)
+            description = '登录认证失效，请重新登录'
+            break
+          case 'invalid_article':
+            description = '文章不存在'
+            break
+          case 'black_list_user':
+            description = '你已被管理员加入黑名单，无法点赞或取消点赞'
+            break
+          default:
+            description = data.msg
+            break
+        }
+        dialog({ title: '请求错误', description: description })
+      } else {
+        $('#articleLikeNum').html(parseInt($('#articleLikeNum').html()) + 1)
+        $('#articleLikeIcon').removeClass('far').addClass('fas')
+      }
+    } else {
+      let res = await axios.delete('/api/articles/like', {
+        params: {
+          url: "{{ .URL }}"
+        }
+      })
+      let data = res.data
+      if (data === null) {
+        dialog({ title: '服务器错误', description: '请稍后重试' })
+      } else if (data.state === 'error') {
+        let description
+        switch (data.msg) {
+          case 'not_login':
+            logout(true)
+            description = '登录认证失效，请重新登录'
+            break
+          case 'invalid_article':
+            description = '文章不存在'
+            break
+          case 'black_list_user':
+            description = '你已被管理员加入黑名单，无法点赞或取消点赞'
+            break
+          default:
+            description = data.msg
+            break
+        }
+        dialog({ title: '请求错误', description: description })
+      } else {
+        $('#articleLikeNum').html(parseInt($('#articleLikeNum').html()) - 1)
+        $('#articleLikeIcon').removeClass('fas').addClass('far')
+      }
+    }
+  }
+
+  async function articleDelete() {
+    dialog({
+      title: '真的要删除该文章么？',
+      description: '删除之后不可恢复',
+      danger: '确认删除',
+      dangerOnClick: async () => {
+        let res = await axios.delete('/api/articles', {
+          params: {
+            url: "{{ .URL }}"
+          }
+        })
+        let data = res.data
+        if (data === null) {
+          dialog({ title: '服务器错误', description: '请稍后重试' })
+        } else if (data.state === 'error') {
+          let description
+          switch (data.msg) {
+            case 'not_login':
+              logout(true)
+              description = '登录认证失效，请重新登录'
+              break
+            case 'invalid_article':
+              description = '文章不存在'
+              break
+            case 'invalid_user':
+              description = '你不是该文章的作者或管理员'
+              break
+            default:
+              description = data.msg
+              break
+          }
+          dialog({ title: '请求错误', description: description })
+        } else {
+          window.location.href = '/'
+        }
+      }
+    })
+  }
+</script>
+
+<style>
+  .article-head i {
+    color: gray;
+  }
+
+  #articleLike {
+    cursor: pointer;
+  }
+
+</style>
+{{ end }}

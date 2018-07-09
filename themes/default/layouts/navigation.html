@@ -1,0 +1,122 @@
+{{ define "navigation" }}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="/">{{ .WebsiteName }}</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarItems" aria-controls="navbarItems"
+      aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarItems">
+      <ul class="navbar-nav mr-auto">
+        <li id="_page_"  class="nav-item">
+          <a class="nav-link" href="/">首页</a>
+        </li>
+        <li id="_page_archives" class="nav-item">
+          <a class="nav-link" href="/archives">归档</a>
+        </li>
+        <li id="_page_about" class="nav-item">
+          <a class="nav-link" href="/about">关于</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav ml-auto">
+        <li class="nolog nav-item">
+          <a onclick="login()" class="nav-link">登录</a>
+        </li>
+        <li class="nolog nav-item">
+          <span class="navbar-text">或</span>
+        </li>
+        <li class="nolog nav-item">
+          <a class="nav-link" href="https://oauth.xmatrix.studio/register" target="_black">注册</a>
+        </li>
+        <li id="bell" class="logged nav-item">
+          <a class="nav-link" href="https://blog.zhenly.cn" style="margin-top:4px; font-size:16px;">
+            <i class="fas fa-bell"></i>
+          </a>
+        </li>
+        <li id="articleCreate" class="logged nav-item">
+          <a class="nav-link" href="/editor" style="margin-top:4px; font-size:16px;">
+            <i class="fas fa-plus"></i>
+          </a>
+        </li>
+        <li class="logged nav-item dropdown">
+          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" id="navUser" aria-haspopup="true" aria-expanded="false">
+            <img id="avatar" class="rounded d-block mx-auto float-left" style="display:inline-block; vertical-align:middle; height:24px;"
+            />
+            <span class="caret" style="display:inline-block; vertical-align: middle"></span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navUser">
+            <p id="user" class="dropdown-item-text font-weight-light"></p>
+            <div class="dropdown-divider"></div>
+            <a id="settingsA" class="dropdown-item" href="/settings">设置</a>
+            <a class="dropdown-item" onclick="logout()">注销</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<script>
+  const navigationPreOnload = window.onload
+  window.onload = () => {
+    if (navigationPreOnload) navigationPreOnload()
+    navigationInit()
+  }
+
+  function navigationInit() {
+    if (window.location.href.indexOf("/archives/") !== -1) {
+      $('#_page_archives').addClass('active')
+      $('#_page_archives').children('a').append('<span class="sr-only">(current)</span>')
+    } else if (window.location.href.indexOf("/about/") !== -1) {
+      $('#_page_about').addClass('active')
+      $('#_page_about').children('a').append('<span class="sr-only">(current)</span>')
+    } else {
+      $('#_page_').addClass('active')
+      $('#_page_').children('a').append('<span class="sr-only">(current)</span>')
+    }
+    let user = Cookies.get('user')
+    let avatar = Cookies.get('avatar')
+    let level = Cookies.get('level')
+    if (user) {
+      $('#user').html(user)
+      $('#avatar').attr('src', avatar)
+      $('.logged').show()
+      if (level === "0" || level === "-1") {
+        $('#articleCreate').hide()
+      }
+      if (level !== '99') {
+        $('#settingsA').hide()
+      }
+    } else {
+      $('.nolog').show()
+    }
+
+    // TODO
+    $('#bell').hide()
+  }
+
+  function login() {
+    let url = '/api/users/login?url=' + window.location.href
+    window.location.href = url
+  }
+
+  async function logout(isNotRequest) {
+    Cookies.remove('user')
+    Cookies.remove('avatar')
+    Cookies.remove('level')
+    if (!isNotRequest) {
+      await axios.delete('/api/users/login')
+    }
+    $('.nolog').show()
+    $('.logged').hide()
+  }
+</script>
+
+<style>
+  .nolog,
+  .logged {
+    display: none;
+  }
+
+</style>
+{{ end }}

@@ -1,0 +1,17 @@
+Server:
+  Url: https://xmatrix.studio/
+  ApiDir: /api
+  Host: 127.0.0.1
+  Port: 80
+  Dev: true
+Mongo:
+  Host: 127.0.0.1
+  Port: 27017
+  User: your_db_user_name
+  Password: your_db_user_password
+  Name: your_db_name
+Violet:
+  ClientID: your_violet_client_id
+  ClientKey: your_violet_client_key
+  ServerHost: https://oauth.xmatrix.studio/api/v2/
+  LoginURL: https://oauth.xmatrix.studio/Verify/Authorize/
