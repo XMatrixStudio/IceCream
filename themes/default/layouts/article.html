@@ -45,7 +45,7 @@
   }
 
   async function articleInit() {
-    if ($('#writer').html() === Cookies.get('user')) {
+    if ($('#writer').html() === Cookies.get('user') || Cookies.get('level') === '99') {
       $('#articleEdit').css('display', 'inline-block')
     }
     let res = await axios.get('/api/articles/like', {

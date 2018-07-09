@@ -47,7 +47,7 @@
           $('#commentBox').append('<hr/>')
         }
         let date = new Date(data.comments[i].date)
-        let dateStr = (date.getYear() + 1900) + '-' + (date.getMonth() + 1) + '-' + (date.getDay() + 1)
+        let dateStr = (date.getYear() + 1900) + '-' + (date.getMonth() + 1) + '-' + date.getDate()
         dateStr = dateStr + ' ' + (date.getHours() < 10 ? '0' + date.getHours() : date.getHours())
         dateStr = dateStr + ':' + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes())
         dateStr = dateStr + ':' + (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds())

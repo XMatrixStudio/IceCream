@@ -26,7 +26,11 @@ type articleService struct {
 
 func (s *articleService) GetArticleByURL(userID, url string) (article models.Article, err error) {
 	article = *s.Model.GetArticleByURL(url)
-	if article.WriterID != userID {
+	user, err := s.Service.Model.User.GetUserByID(userID)
+	if err != nil {
+		return
+	}
+	if article.WriterID != userID && user.Level != 99 {
 		err = errors.New("invalid_user")
 		return
 	}
@@ -75,7 +79,7 @@ func (s *articleService) UpdateArticle(userID, title, oldurl, url, text string, 
 		return errors.New("invalid_level")
 	}
 	article := s.Model.GetArticleByURL(oldurl)
-	if article.WriterID != userID {
+	if article.WriterID != userID && user.Level != 99 {
 		return errors.New("invalid_user")
 	}
 	if oldurl != url {
@@ -102,9 +106,13 @@ func (s *articleService) UpdateArticle(userID, title, oldurl, url, text string, 
 
 func (s *articleService) RemoveArticle(userID, url string) (err error) {
 	article := s.Model.GetArticleByURL(url)
+	user, err := s.Service.Model.User.GetUserByID(userID)
+	if err != nil {
+		return
+	}
 	if article == nil {
 		return errors.New("invalid_article")
-	} else if article.WriterID != userID {
+	} else if article.WriterID != userID && user.Level != 99 {
 		return errors.New("invalid_user")
 	}
 	err = s.Model.RemoveArticle(article.ID.Hex())
